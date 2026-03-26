@@ -1,0 +1,36 @@
+{
+  "name": "@kodeai/cli",
+  "version": "0.0.1",
+  "type": "module",
+  "description": "CLI for the Kodeai framework",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "kodeai": "./dist/bin.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/bin.ts src/index.ts --format esm --dts --clean",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.19.11",
+    "@kodeai/core": "workspace:*",
+    "@kodeai/generators": "workspace:*",
+    "@kodeai/runtime": "workspace:*",
+    "@libsql/client": "^0.17.2",
+    "commander": "^13.1.0",
+    "drizzle-orm": "^0.38.4",
+    "hono": "^4.12.9"
+  },
+  "devDependencies": {
+    "tsup": "^8.4.0",
+    "typescript": "^5.9.0"
+  }
+}

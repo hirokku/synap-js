@@ -1,0 +1,235 @@
+import type { Command } from 'commander';
+import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
+
+export function registerInitCommand(program: Command): void {
+  program
+    .command('init [name]')
+    .description('Initialize a new Kodeai project')
+    .option('--db <type>', 'Database provider', 'sqlite')
+    .option('--no-frontend', 'API only, no frontend')
+    .action(async (name?: string, opts?: { db?: string }) => {
+      const projectName = name ?? 'my-kodeai-app';
+      const projectDir = join(process.cwd(), projectName);
+      const dbProvider = opts?.db ?? 'sqlite';
+
+      if (existsSync(projectDir)) {
+        console.log(`\x1b[31m✗\x1b[0m Directory "${projectName}" already exists.`);
+        process.exit(1);
+      }
+
+      console.log(`\n\x1b[36mKodeai\x1b[0m Creating project "${projectName}"...\n`);
+
+      // Create directory structure
+      const dirs = [
+        '',
+        'specs/models',
+        'src/generated',
+        'src/extensions/api',
+        'migrations',
+      ];
+      for (const dir of dirs) {
+        mkdirSync(join(projectDir, dir), { recursive: true });
+      }
+
+      // package.json
+      writeFileSync(join(projectDir, 'package.json'), JSON.stringify({
+        name: projectName,
+        version: '0.0.1',
+        private: true,
+        type: 'module',
+        scripts: {
+          dev: 'kodeai dev',
+          generate: 'kodeai generate',
+          validate: 'kodeai validate',
+          build: 'kodeai build',
+        },
+        dependencies: {
+          '@kodeai/cli': '^0.0.1',
+          '@kodeai/runtime': '^0.0.1',
+          hono: '^4.7.0',
+          'drizzle-orm': '^0.38.0',
+          zod: '^3.24.0',
+        },
+        devDependencies: {
+          typescript: '^5.9.0',
+          '@types/node': '^25.0.0',
+        },
+      }, null, 2) + '\n');
+
+      // tsconfig.json
+      writeFileSync(join(projectDir, 'tsconfig.json'), JSON.stringify({
+        compilerOptions: {
+          target: 'ES2022',
+          module: 'ESNext',
+          moduleResolution: 'bundler',
+          lib: ['ES2022'],
+          strict: true,
+          esModuleInterop: true,
+          skipLibCheck: true,
+          forceConsistentCasingInFileNames: true,
+          resolveJsonModule: true,
+          isolatedModules: true,
+          outDir: 'dist',
+          declaration: true,
+          paths: {
+            '@generated/*': ['./src/generated/*'],
+            '@extensions/*': ['./src/extensions/*'],
+          },
+        },
+        include: ['src/**/*.ts'],
+        exclude: ['node_modules', 'dist'],
+      }, null, 2) + '\n');
+
+      // .gitignore
+      writeFileSync(join(projectDir, '.gitignore'), [
+        'node_modules/',
+        'dist/',
+        '.env*',
+        'coverage/',
+        '*.db',
+        '*.db-journal',
+      ].join('\n') + '\n');
+
+      // .env
+      writeFileSync(join(projectDir, '.env'), [
+        `DATABASE_URL=${dbProvider === 'sqlite' ? 'file:./dev.db' : 'postgresql://localhost:5432/' + projectName}`,
+        'PORT=3000',
+        'NODE_ENV=development',
+      ].join('\n') + '\n');
+
+      // .env.example
+      writeFileSync(join(projectDir, '.env.example'), [
+        `DATABASE_URL=${dbProvider === 'sqlite' ? 'file:./dev.db' : 'postgresql://localhost:5432/myapp'}`,
+        'PORT=3000',
+        'NODE_ENV=development',
+      ].join('\n') + '\n');
+
+      // Example spec
+      writeFileSync(join(projectDir, 'specs/models/task.spec.yaml'), `model: Task
+fields:
+  id:
+    type: uuid
+    primary: true
+  title:
+    type: string
+    min: 1
+    max: 200
+  description:
+    type: text
+    nullable: true
+  completed:
+    type: boolean
+    default: false
+  priority:
+    type: enum
+    values: [low, medium, high]
+    default: medium
+
+api:
+  endpoints: [list, get, create, update, delete]
+  auth:
+    list: public
+    get: public
+    create: public
+    update: public
+    delete: public
+  sortable: [title, completed, priority, createdAt]
+  pagination:
+    defaultLimit: 20
+    maxLimit: 100
+`);
+
+      // kodeai.config.ts
+      writeFileSync(join(projectDir, 'kodeai.config.ts'), `import { defineConfig } from '@kodeai/core';
+
+export default defineConfig({
+  database: {
+    provider: '${dbProvider === 'sqlite' ? 'sqlite' : 'postgresql'}',
+    url: process.env.DATABASE_URL ?? '${dbProvider === 'sqlite' ? 'file:./dev.db' : 'postgresql://localhost:5432/' + projectName}',
+  },
+  generate: {
+    outputDir: 'src/generated',
+    extensionsDir: 'src/extensions',
+    specsDir: 'specs',
+  },
+  api: {
+    prefix: '/api',
+  },
+});
+`);
+
+      // CLAUDE.md
+      writeFileSync(join(projectDir, 'CLAUDE.md'), `# Kodeai Project: ${projectName}
+
+This project uses the Kodeai.js framework — an AI-first full-stack TypeScript framework.
+AI operates the framework via CLI commands, not by writing code directly.
+
+## Quick Reference
+- Generate code: \`kodeai generate\`
+- Validate specs: \`kodeai validate\`
+- Dev server: \`kodeai dev\`
+- Add model: \`kodeai add model <Name>\`
+
+## Architecture
+- Specs (YAML) in specs/ → \`kodeai generate\` → Generated code in src/generated/
+- NEVER edit files in src/generated/ — they are overwritten on generate
+- Custom logic goes in src/extensions/
+
+## Stack
+TypeScript (strict), Hono, Drizzle ORM, Zod, SQLite
+`);
+
+      console.log(`  \x1b[32m✓\x1b[0m package.json`);
+      console.log(`  \x1b[32m✓\x1b[0m tsconfig.json`);
+      console.log(`  \x1b[32m✓\x1b[0m kodeai.config.ts`);
+      console.log(`  \x1b[32m✓\x1b[0m .gitignore`);
+      console.log(`  \x1b[32m✓\x1b[0m .env`);
+      console.log(`  \x1b[32m✓\x1b[0m CLAUDE.md`);
+      console.log(`  \x1b[32m✓\x1b[0m specs/models/task.spec.yaml`);
+
+      // Now run generate
+      console.log(`\nGenerating code from specs...\n`);
+
+      const { parseAllSpecs, resolveSpecs } = await import('@kodeai/core');
+      const { ModelGenerator, ValidatorGenerator, ApiGenerator, MigrationGenerator } = await import('@kodeai/generators');
+
+      const specsDir = join(projectDir, 'specs');
+      const outputDir = join(projectDir, 'src', 'generated');
+      const { specs, errors: parseErrors } = parseAllSpecs(specsDir);
+
+      if (parseErrors.length > 0) {
+        for (const err of parseErrors) {
+          console.log(`\x1b[31m✗\x1b[0m ${err.message}`);
+        }
+        process.exit(1);
+      }
+
+      const { graph } = resolveSpecs(specs);
+      const orderedSpecs = graph.order
+        .map((n: string) => specs.find((s: { model: string }) => s.model === n))
+        .filter(Boolean);
+
+      const context = { specsDir, outputDir, extensionsDir: join(projectDir, 'src', 'extensions'), allSpecs: orderedSpecs };
+      const generators = [ModelGenerator, ValidatorGenerator, ApiGenerator, MigrationGenerator];
+
+      let totalFiles = 0;
+      for (const gen of generators) {
+        const result = await gen.generate(orderedSpecs, context);
+        for (const file of result.files) {
+          const fullPath = file.path.startsWith('/') ? file.path : join(projectDir, file.path);
+          mkdirSync(join(fullPath, '..'), { recursive: true });
+          writeFileSync(fullPath, file.content, 'utf-8');
+          totalFiles++;
+        }
+      }
+
+      console.log(`  \x1b[32m✓\x1b[0m Generated ${totalFiles} files\n`);
+
+      console.log(`\x1b[32mDone!\x1b[0m Project "${projectName}" created.\n`);
+      console.log(`Next steps:\n`);
+      console.log(`  cd ${projectName}`);
+      console.log(`  npm install`);
+      console.log(`  kodeai dev\n`);
+    });
+}
