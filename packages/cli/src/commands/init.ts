@@ -1,6 +1,12 @@
 import type { Command } from 'commander';
 import { mkdirSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { createInterface } from 'node:readline';
+import { MCP_CONFIGS, writeMcpConfig } from '../mcp-configs.js';
+
+function ask(rl: ReturnType<typeof createInterface>, question: string): Promise<string> {
+  return new Promise((resolve) => rl.question(question, resolve));
+}
 
 export function registerInitCommand(program: Command): void {
   program
@@ -226,11 +232,42 @@ TypeScript (strict), Hono, Drizzle ORM, Zod, SQLite
 
       console.log(`  \x1b[32m✓\x1b[0m Generated ${totalFiles} files\n`);
 
-      console.log(`\x1b[32mDone!\x1b[0m Project "${projectName}" created.\n`);
+      // Interactive AI setup
+      const rl = createInterface({ input: process.stdin, output: process.stdout });
+
+      console.log(`\x1b[36mAI Setup\x1b[0m — Which AI tool will you use to develop this project?\n`);
+
+      const entries = Object.entries(MCP_CONFIGS);
+      for (let i = 0; i < entries.length; i++) {
+        console.log(`  ${i + 1}. ${entries[i]![1].label}`);
+      }
+      console.log(`  5. All of the above`);
+      console.log(`  0. Skip (I'll configure later with: npx synap mcp setup)\n`);
+
+      const choice = await ask(rl, 'Choose (0-5): ');
+      rl.close();
+
+      const num = parseInt(choice, 10);
+
+      if (num > 0 && num <= entries.length) {
+        const [key] = entries[num - 1]!;
+        const result = writeMcpConfig(projectDir, key);
+        console.log(`\n  \x1b[32m✓\x1b[0m ${result.dir}/${result.file}  (${result.label})`);
+      } else if (num === 5) {
+        console.log('');
+        for (const [key] of entries) {
+          const result = writeMcpConfig(projectDir, key);
+          console.log(`  \x1b[32m✓\x1b[0m ${result.dir}/${result.file}  (${result.label})`);
+        }
+      } else {
+        console.log(`\n  \x1b[90mSkipped. Run "npx synap mcp setup <ai>" anytime.\x1b[0m`);
+      }
+
+      console.log(`\n\x1b[32mDone!\x1b[0m Project "${projectName}" created.\n`);
       console.log(`Next steps:\n`);
       console.log(`  cd ${projectName}`);
       console.log(`  npm install`);
-      console.log(`  npx synap ai setup    \x1b[90m# optional: configure AI (Claude, OpenAI, Gemini)\x1b[0m`);
-      console.log(`  npx synap dev\n`);
+      console.log(`  npx synap dev`);
+      console.log(`\n  Then open the project in your AI tool — it will auto-connect via MCP.\n`);
     });
 }

@@ -4,7 +4,6 @@ import { registerValidateCommand } from './commands/validate.js';
 import { registerGenerateCommand } from './commands/generate.js';
 import { registerDevCommand } from './commands/dev.js';
 import { registerMcpCommand } from './commands/mcp-setup.js';
-import { registerAiCommand } from './commands/ai-setup.js';
 
 export const program = new Command();
 
@@ -19,7 +18,6 @@ registerValidateCommand(program);
 registerGenerateCommand(program);
 registerDevCommand(program);
 registerMcpCommand(program);
-registerAiCommand(program);
 
 // Stub commands — v2+
 program.command('add <type> [name]').description('Add a new resource');
