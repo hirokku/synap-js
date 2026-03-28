@@ -11,9 +11,10 @@ Idea → Spec (YAML) → synap generate → Working API with database
 ## Quick Start
 
 ```bash
-synap init my-app
+npx @synap-js/cli init my-app
 cd my-app
-synap dev
+npm install
+npx synap dev
 ```
 
 That's it. You now have a REST API with full CRUD, SQLite database, pagination, and timestamps — from a single YAML spec.
@@ -65,7 +66,7 @@ api:
 **2. Generate:**
 
 ```bash
-synap generate
+npx synap generate
 ```
 
 From ~25 lines of YAML, Synap generates:
@@ -79,7 +80,7 @@ From ~25 lines of YAML, Synap generates:
 **3. Run:**
 
 ```bash
-synap dev
+npx synap dev
 ```
 
 Server starts with SQLite (zero config), auto-creates tables from specs, and serves your API.
@@ -101,7 +102,7 @@ Synap Dev Server
 
 ## What Gets Generated
 
-From a single spec, `synap generate` produces:
+From a single spec, `npx synap generate` produces:
 
 | File | Content |
 |---|---|
@@ -121,6 +122,58 @@ Every generated file includes an auto-generated header:
  * Source: specs/models/product.spec.yaml
  * Generated: 2026-03-26T19:34:08.865Z
  */
+```
+
+## MCP Server
+
+Synap includes a built-in MCP (Model Context Protocol) server that lets any AI — Claude Code, Cursor, Copilot, VS Code — connect to your project and operate it directly.
+
+### Setup
+
+Add to your MCP client config (e.g. `.claude/mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "synap": {
+      "command": "npx",
+      "args": ["@synap-js/mcp"]
+    }
+  }
+}
+```
+
+### Resources (AI reads context)
+
+| Resource | URI | Description |
+|---|---|---|
+| Manifest | `project://manifest` | Project summary with model/field/endpoint counts |
+| Models | `project://models` | All models with fields and relations |
+| Model Detail | `project://models/{name}` | Full detail of a specific model |
+| Routes | `project://routes` | API endpoint map with auth levels |
+| Extensions | `project://extensions` | Active hooks and overrides |
+| Errors | `project://errors` | Current spec validation errors |
+| Config | `project://config` | Project configuration |
+
+### Tools (AI executes actions)
+
+| Tool | Description |
+|---|---|
+| `validate` | Validate all specs, report errors |
+| `generate` | Generate code from specs (types, schemas, validators, API) |
+| `add_model` | Create a new model spec from name + fields or raw YAML |
+| `add_field` | Add a field to an existing model spec |
+| `add_relation` | Create a relation between two models |
+| `inspect` | Diagnostic inspection of a model or the project |
+
+### Example AI Workflow
+
+```
+Developer: "Add a Category model with name and description"
+
+AI → calls add_model tool → creates specs/models/category.spec.yaml
+AI → calls generate tool → generates 10 TypeScript files
+AI → reads project://routes → confirms new endpoints are available
 ```
 
 ## Spec Features
@@ -194,16 +247,16 @@ api:
 ## CLI Commands
 
 ```bash
-synap init [name]        # Create new project with example spec
-synap generate [target]  # Generate code from specs (models, api, or all)
-synap validate [spec]    # Validate specs without generating
-synap dev                # Start dev server with SQLite + auto-migrate
+npx @synap-js/cli init [name]   # Create new project with example spec
+npx synap generate [target]     # Generate code from specs (models, api, or all)
+npx synap validate [spec]       # Validate specs without generating
+npx synap dev                   # Start dev server with SQLite + auto-migrate
 ```
 
 ### Validation Output
 
 ```
-synap validate
+npx synap validate
 
 ✓ models/product.spec.yaml — valid
 ✓ models/user.spec.yaml — valid
@@ -227,13 +280,15 @@ Synap fixes this:
 | **Spec-driven** | Describe what you want in YAML. The framework generates correct code. |
 | **Type contracts** | TypeScript types constrain output — invalid code won't compile. |
 | **Absolute conventions** | Every file has one correct location. Zero ambiguity. |
-| **Immediate validation** | `synap validate` catches errors before generation. |
-| **AI-native** | `CLAUDE.md` auto-generated so any AI understands the project instantly. |
+| **Immediate validation** | `npx synap validate` catches errors before generation. |
+| **AI-native** | MCP server + auto-generated context files so any AI understands the project instantly. |
 
 ## Architecture
 
 ```
 ┌─────────────────────────────────────────────┐
+│           MCP LAYER                         │  ← AI connects here (Claude, Cursor, etc.)
+├─────────────────────────────────────────────┤
 │           SPEC LAYER                        │  ← .spec.yaml (you write this)
 ├─────────────────────────────────────────────┤
 │           ENGINE LAYER                      │  ← Parser + Validators + Generators
@@ -253,6 +308,7 @@ Synap fixes this:
 | Database | SQLite via [libsql](https://github.com/tursodatabase/libsql) | Zero config for dev |
 | Validation | [Zod](https://zod.dev) | Auto type inference, declarative |
 | Schema | [Drizzle](https://orm.drizzle.team) | Type-safe, real SQL, no magic |
+| AI Protocol | [MCP](https://modelcontextprotocol.io) | Standard protocol for AI tool integration |
 | Testing | [Vitest](https://vitest.dev) | Native ESM + TS, ultra-fast |
 
 ## Packages
@@ -263,13 +319,13 @@ packages/
 ├── generators/  → @synap-js/generators  # Type, schema, validator, API generators
 ├── runtime/     → @synap-js/runtime     # Error hierarchy, hooks, server utils
 ├── cli/         → @synap-js/cli         # CLI commands (init, generate, dev, validate)
-├── mcp/         → @synap-js/mcp         # MCP server for AI tools (planned)
+├── mcp/         → @synap-js/mcp         # MCP server for AI tools
 └── devtools/    → @synap-js/devtools    # Dev server, inspector (planned)
 ```
 
 ## Project Status
 
-**Working** — `synap init` → `synap dev` produces a functional REST API.
+**Working** — `npx @synap-js/cli init` → `npx synap dev` produces a functional REST API.
 
 | Feature | Status |
 |---|---|
@@ -279,9 +335,9 @@ packages/
 | API generator (Hono controllers + routes) | Done |
 | Dev server with SQLite + auto-migrate | Done |
 | `synap init` scaffolding | Done |
-| 127 tests passing | Done |
+| MCP server (resources + tools) | Done |
+| 152 tests passing | Done |
 | Auth system | Planned |
-| MCP server | Planned |
 | UI generator | Planned |
 | Plugin system | Planned |
 

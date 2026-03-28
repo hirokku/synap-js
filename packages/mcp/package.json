@@ -6,7 +6,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "synap-mcp": "./dist/index.js"
+    "synap-mcp": "./dist/bin.js"
   },
   "exports": {
     ".": {
@@ -15,7 +15,7 @@
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts --format esm --dts --clean",
+    "build": "tsup src/bin.ts src/index.ts --format esm --dts --clean",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
   },

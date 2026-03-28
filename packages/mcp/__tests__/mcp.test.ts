@@ -3,6 +3,11 @@ import { MCP_VERSION } from '../src/index.js';
 
 describe('@synap-js/mcp', () => {
   it('exports version', () => {
-    expect(MCP_VERSION).toBe('0.0.1');
+    expect(MCP_VERSION).toBe('0.1.0');
+  });
+
+  it('exports createMcpServer', async () => {
+    const mod = await import('../src/index.js');
+    expect(typeof mod.createMcpServer).toBe('function');
   });
 });
