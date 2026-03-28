@@ -188,6 +188,59 @@ AI → calls generate tool → generates 10 TypeScript files
 AI → reads project://routes → confirms new endpoints are available
 ```
 
+## Interactive Dev Mode
+
+The dev server includes a built-in AI-powered console. Talk to Claude, OpenAI, or Gemini directly from your terminal — they can create models, add fields, generate code, and more using the MCP tools.
+
+### Setup
+
+```bash
+npx synap ai setup
+```
+
+Select your provider and enter your API key. Or skip — the dev server will ask on first run.
+
+### Usage
+
+```bash
+npx synap dev
+```
+
+```
+Synap Dev Server
+
+  ✓ Database: ./dev.db
+  ✓ Table: tasks
+  ✓ Server running at http://localhost:3000
+  ✓ AI: claude (claude-sonnet-4-20250514)
+
+  Commands: validate, generate, ask <prompt>, provider, help, exit
+
+synap> validate
+  ✓ All specs valid. 1 model(s).
+
+synap> ask Add a Product model with name, price, and stock
+  🤖 Created model "Product" with 4 fields. Generated 10 files.
+
+synap> generate
+  ✓ Generated 10 file(s)
+```
+
+**Supported providers:**
+
+| Provider | SDK | Default Model |
+|---|---|---|
+| Claude | `@ai-sdk/anthropic` | claude-sonnet-4-20250514 |
+| OpenAI | `@ai-sdk/openai` | gpt-4o |
+| Gemini | `@ai-sdk/google` | gemini-2.0-flash |
+
+When AI is configured, you can type natural language directly — no `ask` prefix needed:
+
+```
+synap> Add a Category model with name and description, related to Product
+  🤖 Created model "Category". Added relation to Product. Generated 14 files.
+```
+
 ## Spec Features
 
 ### Field Types
@@ -262,8 +315,10 @@ api:
 npx @synap-js/cli init [name]   # Create new project with example spec
 npx synap generate [target]     # Generate code from specs (models, api, or all)
 npx synap validate [spec]       # Validate specs without generating
-npx synap dev                   # Start dev server with SQLite + auto-migrate
+npx synap dev                   # Start dev server with SQLite + interactive AI console
 npx synap mcp setup <target>    # Generate MCP config (claude, cursor, vscode, windsurf, all)
+npx synap ai setup              # Configure AI provider (Claude, OpenAI, Gemini)
+npx synap ai remove             # Remove AI provider configuration
 ```
 
 ### Validation Output
@@ -349,6 +404,7 @@ packages/
 | Dev server with SQLite + auto-migrate | Done |
 | `synap init` scaffolding | Done |
 | MCP server (resources + tools) | Done |
+| Interactive AI console (Claude, OpenAI, Gemini) | Done |
 | 152 tests passing | Done |
 | Auth system | Planned |
 | UI generator | Planned |

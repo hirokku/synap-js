@@ -7,6 +7,7 @@ import { serve } from '@hono/node-server';
 import { createClient } from '@libsql/client';
 import { parseAllSpecs, resolveSpecs } from '@synap-js/core';
 import type { SpecModel, SpecField } from '@synap-js/core';
+import { startRepl } from '../ai/repl.js';
 
 export function registerDevCommand(program: Command): void {
   program
@@ -120,7 +121,10 @@ export function registerDevCommand(program: Command): void {
             console.log(`    ${method.padEnd(6)} ${path}`);
           }
         }
-        console.log(`\n  Press Ctrl+C to stop.\n`);
+        console.log('');
+
+        // Start interactive REPL
+        startRepl(cwd);
       });
     });
 }

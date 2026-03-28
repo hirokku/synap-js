@@ -1,6 +1,6 @@
 {
   "name": "@synap-js/cli",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "type": "module",
   "description": "CLI for the Synap framework",
   "main": "./dist/index.js",
@@ -20,14 +20,19 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^3.0.64",
+    "@ai-sdk/google": "^3.0.53",
+    "@ai-sdk/openai": "^3.0.48",
     "@hono/node-server": "^1.19.11",
+    "@libsql/client": "^0.17.2",
     "@synap-js/core": "workspace:*",
     "@synap-js/generators": "workspace:*",
     "@synap-js/runtime": "workspace:*",
-    "@libsql/client": "^0.17.2",
+    "ai": "^6.0.141",
     "commander": "^13.1.0",
     "drizzle-orm": "^0.38.4",
-    "hono": "^4.12.9"
+    "hono": "^4.12.9",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "tsup": "^8.4.0",
