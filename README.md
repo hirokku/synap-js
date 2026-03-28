@@ -5,15 +5,15 @@
 Synap is a framework where AI is the primary developer. Instead of adapting human frameworks for AI, Synap is architecturally designed so AI knows exactly what to generate, where to put it, and how to validate it.
 
 ```
-Idea → Spec (YAML) → synap-js generate → Working API with database
+Idea → Spec (YAML) → synap generate → Working API with database
 ```
 
 ## Quick Start
 
 ```bash
-synap-js init my-app
+synap init my-app
 cd my-app
-synap-js dev
+synap dev
 ```
 
 That's it. You now have a REST API with full CRUD, SQLite database, pagination, and timestamps — from a single YAML spec.
@@ -65,7 +65,7 @@ api:
 **2. Generate:**
 
 ```bash
-synap-js generate
+synap generate
 ```
 
 From ~25 lines of YAML, Synap generates:
@@ -79,7 +79,7 @@ From ~25 lines of YAML, Synap generates:
 **3. Run:**
 
 ```bash
-synap-js dev
+synap dev
 ```
 
 Server starts with SQLite (zero config), auto-creates tables from specs, and serves your API.
@@ -101,7 +101,7 @@ Synap Dev Server
 
 ## What Gets Generated
 
-From a single spec, `synap-js generate` produces:
+From a single spec, `synap generate` produces:
 
 | File | Content |
 |---|---|
@@ -194,16 +194,16 @@ api:
 ## CLI Commands
 
 ```bash
-synap-js init [name]        # Create new project with example spec
-synap-js generate [target]  # Generate code from specs (models, api, or all)
-synap-js validate [spec]    # Validate specs without generating
-synap-js dev                # Start dev server with SQLite + auto-migrate
+synap init [name]        # Create new project with example spec
+synap generate [target]  # Generate code from specs (models, api, or all)
+synap validate [spec]    # Validate specs without generating
+synap dev                # Start dev server with SQLite + auto-migrate
 ```
 
 ### Validation Output
 
 ```
-synap-js validate
+synap validate
 
 ✓ models/product.spec.yaml — valid
 ✓ models/user.spec.yaml — valid
@@ -227,7 +227,7 @@ Synap fixes this:
 | **Spec-driven** | Describe what you want in YAML. The framework generates correct code. |
 | **Type contracts** | TypeScript types constrain output — invalid code won't compile. |
 | **Absolute conventions** | Every file has one correct location. Zero ambiguity. |
-| **Immediate validation** | `synap-js validate` catches errors before generation. |
+| **Immediate validation** | `synap validate` catches errors before generation. |
 | **AI-native** | `CLAUDE.md` auto-generated so any AI understands the project instantly. |
 
 ## Architecture
@@ -269,7 +269,7 @@ packages/
 
 ## Project Status
 
-**Working** — `synap-js init` → `synap-js dev` produces a functional REST API.
+**Working** — `synap init` → `synap dev` produces a functional REST API.
 
 | Feature | Status |
 |---|---|
@@ -278,7 +278,7 @@ packages/
 | Validator generator (Zod) | Done |
 | API generator (Hono controllers + routes) | Done |
 | Dev server with SQLite + auto-migrate | Done |
-| `synap-js init` scaffolding | Done |
+| `synap init` scaffolding | Done |
 | 127 tests passing | Done |
 | Auth system | Planned |
 | MCP server | Planned |

@@ -230,6 +230,6 @@ TypeScript (strict), Hono, Drizzle ORM, Zod, SQLite
       console.log(`Next steps:\n`);
       console.log(`  cd ${projectName}`);
       console.log(`  npm install`);
-      console.log(`  synap dev\n`);
+      console.log(`  npx synap dev\n`);
     });
 }
