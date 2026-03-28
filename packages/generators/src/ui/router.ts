@@ -16,9 +16,10 @@ export function generateRouter(specs: SpecModel[], context: GeneratorContext): G
     routes.push(`  { path: '${page.route}', component: ${page.page}Page }`);
   }
 
-  // Admin dashboard (auto-generated if there are API models)
+  // Admin dashboard (auto-generated only if no page spec already covers /app)
   const apiSpecs = specs.filter((s) => s.api?.endpoints?.length);
-  if (apiSpecs.length > 0) {
+  const hasAppPage = pageSpecs.some((p) => p.route === '/app' || p.route === '/admin');
+  if (apiSpecs.length > 0 && !hasAppPage) {
     importSet.add(`import { AdminPage } from './pages/admin-page.js';`);
     routes.push(`  { path: '/app', component: AdminPage }`);
   }

@@ -134,9 +134,10 @@ export function ${model}EditPage({ id }: { id: string }) {
     }
   }
 
-  // Auto-generate admin dashboard
+  // Auto-generate admin dashboard (only if no page spec covers /app or /admin)
   const apiSpecs = specs.filter((s) => s.api?.endpoints?.length);
-  if (apiSpecs.length > 0) {
+  const hasAppPage = pageSpecs.some((p) => p.route === '/app' || p.route === '/admin');
+  if (apiSpecs.length > 0 && !hasAppPage) {
     const navItems = apiSpecs
       .map((s) => `{ label: '${s.model}s', href: '/${toKebabCase(s.model)}s' }`)
       .join(', ');

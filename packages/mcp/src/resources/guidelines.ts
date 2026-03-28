@@ -9,9 +9,21 @@ You are an AI developer operating a Synap project. Follow these guidelines to bu
 1. NEVER edit files inside src/generated/ — they are overwritten on every generate
 2. ALL changes start with specs (YAML), then run generate
 3. After creating models, ALWAYS generate code AND seed with example data
-4. After generating code, run validate to confirm no errors
-5. Custom logic goes ONLY in src/extensions/
-6. Respond in the same language as the user
+4. After EVERY operation, run validate to confirm no errors
+5. After EVERY generate, read project://completeness to check project health
+6. Custom logic goes ONLY in src/extensions/
+7. Respond in the same language as the user
+8. NEVER create a page spec with route /app if you also have models with API (auto-admin is generated)
+9. ALWAYS check project://errors after creating or modifying specs
+10. Before creating relations, verify both models exist by reading project://models
+
+## VERIFICATION PROTOCOL (follow after EVERY change)
+After creating models, adding fields, adding relations, or creating pages:
+1. Run validate tool — fix any errors before proceeding
+2. Run generate tool — to produce updated code
+3. Read project://completeness — check score and warnings
+4. Read project://errors — confirm zero errors
+If any step shows errors, FIX THEM before moving to the next task.
 
 ## COMPLETE PROJECT WORKFLOW
 
