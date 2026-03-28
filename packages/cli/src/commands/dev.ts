@@ -1,13 +1,13 @@
 import type { Command } from 'commander';
 import { join, dirname } from 'node:path';
-import { existsSync, writeFileSync, mkdirSync } from 'node:fs';
+import { existsSync, writeFileSync, mkdirSync, watch } from 'node:fs';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { serve } from '@hono/node-server';
 import { createClient } from '@libsql/client';
 import { parseAllSpecs, parseAllPageSpecs, resolveSpecs } from '@synap-js/core';
 import type { SpecModel, SpecField, GeneratorContext } from '@synap-js/core';
-import { UiGenerator } from '@synap-js/generators';
+import { ModelGenerator, ValidatorGenerator, ApiGenerator, MigrationGenerator, UiGenerator } from '@synap-js/generators';
 
 export function registerDevCommand(program: Command): void {
   program
@@ -178,6 +178,50 @@ export default defineConfig({
           console.log(`    Install React deps: npm install react react-dom tailwindcss @tailwindcss/vite`);
         }
 
+        // Watch specs/ for changes and regenerate
+        let regenerating = false;
+        const watchDirs = [join(specsDir, 'models'), join(specsDir, 'pages')];
+        for (const watchDir of watchDirs) {
+          if (!existsSync(watchDir)) continue;
+          watch(watchDir, { recursive: false }, async (event, filename) => {
+            if (regenerating) return;
+            if (!filename || (!filename.endsWith('.spec.yaml') && !filename.endsWith('.page.yaml'))) return;
+            regenerating = true;
+            try {
+              console.log(`\n  \x1b[90m⟳ Detected change: ${filename}\x1b[0m`);
+              const { specs: newSpecs, errors: newParseErrors } = parseAllSpecs(specsDir);
+              if (newParseErrors.length > 0) {
+                for (const err of newParseErrors) console.log(`  \x1b[31m✗\x1b[0m ${err.message}`);
+                return;
+              }
+              const { pages: newPages } = parseAllPageSpecs(specsDir);
+              const { graph: newGraph } = resolveSpecs(newSpecs);
+              const newOrdered = newGraph.order
+                .map((n: string) => newSpecs.find((s: SpecModel) => s.model === n))
+                .filter((s: SpecModel | undefined): s is SpecModel => s !== undefined);
+
+              const ctx: GeneratorContext = { specsDir, outputDir, extensionsDir, allSpecs: newOrdered, pageSpecs: newPages };
+              const generators = [ModelGenerator, ValidatorGenerator, ApiGenerator, MigrationGenerator, UiGenerator];
+              let total = 0;
+              for (const gen of generators) {
+                const result = await gen.generate(newOrdered, ctx);
+                for (const file of result.files) {
+                  const fullPath = file.path.startsWith('/') ? file.path : join(cwd, file.path);
+                  mkdirSync(dirname(fullPath), { recursive: true });
+                  writeFileSync(fullPath, file.content, 'utf-8');
+                  total++;
+                }
+              }
+              console.log(`  \x1b[32m✓\x1b[0m Regenerated ${total} files`);
+            } catch (err) {
+              console.log(`  \x1b[31m✗\x1b[0m Regeneration failed: ${err instanceof Error ? err.message : String(err)}`);
+            } finally {
+              regenerating = false;
+            }
+          });
+        }
+
+        console.log(`  \x1b[32m✓\x1b[0m Watching specs/ for changes`);
         console.log(`\n  Press Ctrl+C to stop.\n`);
       });
     });

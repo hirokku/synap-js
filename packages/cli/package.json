@@ -1,6 +1,6 @@
 {
   "name": "@synap-js/cli",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "type": "module",
   "description": "CLI for the Synap framework",
   "main": "./dist/index.js",
