@@ -54,11 +54,11 @@ interface FeatureItem {
 interface FeaturesSectionProps {
   title?: string;
   subtitle?: string;
-  items: FeatureItem[];
+  items?: FeatureItem[];
   columns?: number;
 }
 
-export function FeaturesSection({ title, subtitle, items, columns = 3 }: FeaturesSectionProps) {
+export function FeaturesSection({ title, subtitle, items = [], columns = 3 }: FeaturesSectionProps) {
   const gridCols = columns === 2 ? 'md:grid-cols-2' : columns === 4 ? 'md:grid-cols-4' : 'md:grid-cols-3';
   return (
     <section className="py-20 bg-white">
@@ -97,10 +97,10 @@ interface Plan {
 interface PricingSectionProps {
   title?: string;
   subtitle?: string;
-  plans: Plan[];
+  plans?: Plan[];
 }
 
-export function PricingSection({ title, subtitle, plans }: PricingSectionProps) {
+export function PricingSection({ title, subtitle, plans = [] }: PricingSectionProps) {
   return (
     <section className="py-20 bg-gray-50">
       <div className="mx-auto max-w-5xl px-6">
@@ -164,9 +164,9 @@ export function CtaSection({ title, subtitle, cta }: CtaSectionProps) {
 import React from 'react';
 
 interface Testimonial { quote: string; author: string; role?: string; }
-interface TestimonialsSectionProps { title?: string; items: Testimonial[]; }
+interface TestimonialsSectionProps { title?: string; items?: Testimonial[]; }
 
-export function TestimonialsSection({ title, items }: TestimonialsSectionProps) {
+export function TestimonialsSection({ title, items = [] }: TestimonialsSectionProps) {
   return (
     <section className="py-20 bg-white">
       <div className="mx-auto max-w-5xl px-6">
@@ -194,9 +194,9 @@ export function TestimonialsSection({ title, items }: TestimonialsSectionProps) 
 import React, { useState } from 'react';
 
 interface FaqItem { question: string; answer: string; }
-interface FaqSectionProps { title?: string; items: FaqItem[]; }
+interface FaqSectionProps { title?: string; items?: FaqItem[]; }
 
-export function FaqSection({ title, items }: FaqSectionProps) {
+export function FaqSection({ title, items = [] }: FaqSectionProps) {
   const [open, setOpen] = useState<number | null>(null);
   return (
     <section className="py-20 bg-white">
@@ -244,9 +244,9 @@ export function ContentSection({ title, content }: ContentSectionProps) {
 import React from 'react';
 
 interface StatItem { value: string; label: string; }
-interface StatsSectionProps { title?: string; items: StatItem[]; }
+interface StatsSectionProps { title?: string; items?: StatItem[]; }
 
-export function StatsSection({ title, items }: StatsSectionProps) {
+export function StatsSection({ title, items = [] }: StatsSectionProps) {
   return (
     <section className="py-20 bg-gray-50">
       <div className="mx-auto max-w-5xl px-6">
@@ -271,9 +271,9 @@ export function StatsSection({ title, items }: StatsSectionProps) {
 import React from 'react';
 
 interface TeamMember { name: string; role?: string; avatar?: string; }
-interface TeamSectionProps { title?: string; items: TeamMember[]; }
+interface TeamSectionProps { title?: string; items?: TeamMember[]; }
 
-export function TeamSection({ title, items }: TeamSectionProps) {
+export function TeamSection({ title, items = [] }: TeamSectionProps) {
   return (
     <section className="py-20 bg-white">
       <div className="mx-auto max-w-5xl px-6">
