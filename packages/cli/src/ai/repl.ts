@@ -1,4 +1,6 @@
 import { createInterface } from 'node:readline';
+import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
 import type { LanguageModel } from 'ai';
 import { detectAiConfig, createModel, buildTools, askAi } from './adapter.js';
 
@@ -46,9 +48,6 @@ export async function startRepl(cwd: string): Promise<void> {
         if (provider) {
           const apiKey = await ask(setupRl, `  ${provider.envKey}: `);
           if (apiKey.trim()) {
-            // Save to .env
-            const { writeFileSync, readFileSync, existsSync } = await import('node:fs');
-            const { join } = await import('node:path');
             const envPath = join(cwd, '.env');
             let envContent = existsSync(envPath) ? readFileSync(envPath, 'utf-8') : '';
             envContent = upsertEnv(envContent, 'AI_PROVIDER', provider.key);
@@ -183,12 +182,10 @@ export async function startRepl(cwd: string): Promise<void> {
 }
 
 function loadEnvFile(cwd: string): void {
-  const { readFileSync, existsSync } = require('node:fs');
-  const { join } = require('node:path');
   const envPath = join(cwd, '.env');
   if (!existsSync(envPath)) return;
 
-  const content = readFileSync(envPath, 'utf-8') as string;
+  const content = readFileSync(envPath, 'utf-8');
   for (const line of content.split('\n')) {
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith('#')) continue;
