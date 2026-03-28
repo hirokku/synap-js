@@ -230,6 +230,7 @@ TypeScript (strict), Hono, Drizzle ORM, Zod, SQLite
       console.log(`Next steps:\n`);
       console.log(`  cd ${projectName}`);
       console.log(`  npm install`);
+      console.log(`  npx synap ai setup    \x1b[90m# optional: configure AI (Claude, OpenAI, Gemini)\x1b[0m`);
       console.log(`  npx synap dev\n`);
     });
 }
