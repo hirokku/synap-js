@@ -129,9 +129,10 @@ export function registerDevCommand(program: Command): void {
       const uiDir = join(outputDir, 'ui');
       writeFileSync(join(uiDir, 'vite.config.ts'), `import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   server: {
     proxy: {
       '/api': 'http://localhost:${port}',

@@ -28,6 +28,7 @@ export function generateAppEntry(context: GeneratorContext): GeneratedFile[] {
     content: `${header}
 import React from 'react';
 import { createRoot } from 'react-dom/client';
+import './app.css';
 import { App } from './app.js';
 
 createRoot(document.getElementById('root')!).render(
