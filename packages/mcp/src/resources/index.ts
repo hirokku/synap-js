@@ -6,10 +6,12 @@ import { registerRoutesResource } from './routes.js';
 import { registerExtensionsResource } from './extensions.js';
 import { registerErrorsResource } from './errors.js';
 import { registerConfigResource } from './config.js';
+import { registerPagesResource } from './pages.js';
 
 export function registerAllResources(server: McpServer, ctx: ServerContext): void {
   registerManifestResource(server, ctx);
   registerModelsResources(server, ctx);
+  registerPagesResource(server, ctx);
   registerRoutesResource(server, ctx);
   registerExtensionsResource(server, ctx);
   registerErrorsResource(server, ctx);
