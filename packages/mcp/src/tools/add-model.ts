@@ -126,5 +126,16 @@ function buildYaml(
   lines.push('', 'api:');
   lines.push(`  endpoints: [${eps.join(', ')}]`);
 
+  // UI config — generate CRUD components by default
+  const nonPrimaryFields = Object.entries(fieldDefs)
+    .filter(([, f]) => !f.primary)
+    .map(([n]) => n);
+  lines.push('', 'ui:');
+  lines.push('  components: [table, form, detail]');
+  if (nonPrimaryFields.length > 0) {
+    lines.push('  table:');
+    lines.push(`    columns: [${nonPrimaryFields.join(', ')}]`);
+  }
+
   return lines.join('\n') + '\n';
 }

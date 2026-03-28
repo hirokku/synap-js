@@ -16,6 +16,13 @@ export function generateRouter(specs: SpecModel[], context: GeneratorContext): G
     routes.push(`  { path: '${page.route}', component: ${page.page}Page }`);
   }
 
+  // Admin dashboard (auto-generated if there are API models)
+  const apiSpecs = specs.filter((s) => s.api?.endpoints?.length);
+  if (apiSpecs.length > 0) {
+    imports.push(`import { AdminPage } from './pages/admin-page.js';`);
+    routes.push(`  { path: '/app', component: AdminPage }`);
+  }
+
   // CRUD routes from model specs
   for (const spec of specs) {
     if (!spec.api?.endpoints?.length) continue;

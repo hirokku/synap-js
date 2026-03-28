@@ -134,6 +134,47 @@ export function ${model}EditPage({ id }: { id: string }) {
     }
   }
 
+  // Auto-generate admin dashboard
+  const apiSpecs = specs.filter((s) => s.api?.endpoints?.length);
+  if (apiSpecs.length > 0) {
+    const navItems = apiSpecs
+      .map((s) => `{ label: '${s.model}s', href: '/${toKebabCase(s.model)}s' }`)
+      .join(', ');
+
+    const modelCards = apiSpecs.map((s) => {
+      const fieldCount = Object.keys(s.fields).length;
+      const kebab = toKebabCase(s.model);
+      return `        <a href="/${kebab}s" className="block rounded-xl border border-gray-200 p-6 hover:border-blue-300 hover:shadow-md transition-all">
+          <h3 className="text-lg font-semibold text-gray-900">${s.model}s</h3>
+          <p className="mt-1 text-sm text-gray-500">${fieldCount} fields</p>
+          <div className="mt-3 flex gap-2">
+            ${(s.api?.endpoints ?? []).map((ep: string) => `<span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">${ep}</span>`).join('\n            ')}
+          </div>
+        </a>`;
+    }).join('\n');
+
+    files.push({
+      path: `${dir}/admin-page.tsx`,
+      content: `${header}
+import React from 'react';
+import { AppLayout } from '../layouts/app-layout.js';
+
+export function AdminPage() {
+  return (
+    <AppLayout navItems={[${navItems}]}>
+      <div className="space-y-6">
+        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+${modelCards}
+        </div>
+      </div>
+    </AppLayout>
+  );
+}
+`,
+    });
+  }
+
   return files;
 }
 

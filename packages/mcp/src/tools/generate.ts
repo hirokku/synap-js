@@ -2,9 +2,9 @@ import { z } from 'zod';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { resolveSpecs } from '@synap-js/core';
+import { resolveSpecs, parseAllPageSpecs } from '@synap-js/core';
 import type { GeneratorContext } from '@synap-js/core';
-import { ModelGenerator, ValidatorGenerator, ApiGenerator, MigrationGenerator } from '@synap-js/generators';
+import { ModelGenerator, ValidatorGenerator, ApiGenerator, MigrationGenerator, UiGenerator } from '@synap-js/generators';
 import type { ServerContext, ToolOptions } from '../types.js';
 
 export function registerGenerateTool(server: McpServer, ctx: ServerContext, options: ToolOptions): void {
@@ -13,7 +13,7 @@ export function registerGenerateTool(server: McpServer, ctx: ServerContext, opti
     {
       description: 'Generate code from specs. Writes TypeScript types, Drizzle schemas, Zod validators, and Hono API routes.',
       inputSchema: z.object({
-        target: z.enum(['models', 'api', 'all']).optional().describe('What to generate. Defaults to all.'),
+        target: z.enum(['models', 'api', 'ui', 'all']).optional().describe('What to generate. Defaults to all.'),
       }),
     },
     async ({ target }) => {
@@ -54,17 +54,21 @@ export function registerGenerateTool(server: McpServer, ctx: ServerContext, opti
           .map((name) => specs.find((s) => s.model === name))
           .filter((s): s is NonNullable<typeof s> => s !== undefined);
 
+        const { pages: pageSpecs } = parseAllPageSpecs(ctx.specsDir);
+
         const context: GeneratorContext = {
           specsDir: ctx.specsDir,
           outputDir: ctx.outputDir,
           extensionsDir: ctx.extensionsDir,
           allSpecs: orderedSpecs,
+          pageSpecs,
         };
 
         const t = target ?? 'all';
         const generators = [];
         if (t === 'all' || t === 'models') generators.push(ModelGenerator, ValidatorGenerator);
         if (t === 'all' || t === 'api') generators.push(ApiGenerator);
+        if (t === 'all' || t === 'ui') generators.push(UiGenerator);
         if (t === 'all') generators.push(MigrationGenerator);
 
         let totalFiles = 0;
