@@ -10,8 +10,8 @@ export interface McpConfigEntry {
 
 export const MCP_CONFIGS: Record<string, McpConfigEntry> = {
   claude: {
-    dir: '.claude',
-    file: 'mcp.json',
+    dir: '.',
+    file: '.mcp.json',
     label: 'Claude Code',
     content: JSON.stringify({
       mcpServers: {
