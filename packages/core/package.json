@@ -1,6 +1,6 @@
 {
   "name": "@synap-js/core",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "type": "module",
   "description": "Core types, parser, and resolver for the Synap framework",
   "main": "./dist/index.js",

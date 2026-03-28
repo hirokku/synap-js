@@ -157,11 +157,11 @@ function generateSectionJsx(section: SpecPage['sections'] extends (infer T)[] | 
   const component = sectionTypeToComponent(section.type);
   const props: string[] = [];
 
-  if (section.title) props.push(`title="${section.title}"`);
-  if (section.subtitle) props.push(`subtitle="${section.subtitle}"`);
-  if (section.content) props.push(`content="${section.content}"`);
-  if (section.background) props.push(`background="${section.background}"`);
-  if (section.image) props.push(`image="${section.image}"`);
+  if (section.title) props.push(`title={${JSON.stringify(section.title)}}`);
+  if (section.subtitle) props.push(`subtitle={${JSON.stringify(section.subtitle)}}`);
+  if (section.content) props.push(`content={${JSON.stringify(section.content)}}`);
+  if (section.background) props.push(`background={${JSON.stringify(section.background)}}`);
+  if (section.image) props.push(`image={${JSON.stringify(section.image)}}`);
   if (section.columns) props.push(`columns={${section.columns}}`);
   if (section.cta) props.push(`cta={${JSON.stringify(section.cta)}}`);
   if (section.items) props.push(`items={${JSON.stringify(section.items)}}`);

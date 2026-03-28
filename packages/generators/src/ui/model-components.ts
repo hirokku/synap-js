@@ -101,7 +101,7 @@ export function ${model}Table() {
         const required = !fieldDef.nullable && fieldDef.default === undefined;
 
         if (fieldDef.type === 'enum' && fieldDef.values) {
-          const opts = fieldDef.values.map((v) => `{ value: '${v}', label: '${v}' }`).join(', ');
+          const opts = fieldDef.values.map((v: string) => `{ value: ${JSON.stringify(v)}, label: ${JSON.stringify(v)} }`).join(', ');
           return `      <Select label="${label}" name="${fieldName}" options={[${opts}]} value={form.${fieldName} ?? ''} onChange={(e) => setForm({ ...form, ${fieldName}: e.target.value })} />`;
         }
         if (fieldDef.type === 'text') {

@@ -67,7 +67,7 @@ export function registerGenerateCommand(program: Command): void {
       if (!target || target === 'models') generators.push(ValidatorGenerator);
       if (!target || target === 'api') generators.push(ApiGenerator);
       if (!target || target === 'ui') generators.push(UiGenerator);
-      if (!target) generators.push(MigrationGenerator, UiGenerator);
+      if (!target) generators.push(MigrationGenerator);
 
       let totalFiles = 0;
       for (const generator of generators) {

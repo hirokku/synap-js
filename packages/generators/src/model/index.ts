@@ -129,7 +129,7 @@ function generateSchema(spec: SpecModel, context: GeneratorContext): GeneratedFi
     }
     if (field.unique) colDef += '.unique()';
     if (field.default !== undefined && field.default !== null) {
-      if (typeof field.default === 'string') colDef += `.default('${field.default}')`;
+      if (typeof field.default === 'string') colDef += `.default('${String(field.default).replace(/'/g, "\\'")}')`;
       else colDef += `.default(${field.default})`;
     }
 
@@ -156,7 +156,7 @@ function generateSchema(spec: SpecModel, context: GeneratorContext): GeneratedFi
 
   if (spec.softDelete) {
     drizzleImports.add('timestamp');
-    columns.push(`  deletedAt: timestamp('deleted_at'),`);
+    columns.push(`  deletedAt: timestamp('deleted_at').nullable(),`);
   }
 
   const content = `${header}import { ${[...drizzleImports].sort().join(', ')} } from 'drizzle-orm/pg-core';

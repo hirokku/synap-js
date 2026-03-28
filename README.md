@@ -1,5 +1,7 @@
 # Synap
 
+> **Experimental** — This project is in early development and not ready for production use. APIs, specs, and generated code may change without notice. Use for learning, prototyping, and experimentation only.
+
 **The AI-first full-stack TypeScript framework.**
 
 Synap is a framework where AI is the primary developer. Instead of adapting human frameworks for AI, Synap is architecturally designed so AI knows exactly what to generate, where to put it, and how to validate it.

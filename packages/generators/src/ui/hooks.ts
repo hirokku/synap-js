@@ -58,7 +58,7 @@ export function generateHooks(specs: SpecModel[], context: GeneratorContext): Ge
     if (!id) return;
     setLoading(true);
     fetch(\`${route}/\${id}\`)
-      .then((res) => res.json())
+      .then((res) => { if (!res.ok) throw new Error(\`Failed to fetch (HTTP \${res.status})\`); return res.json(); })
       .then((json) => { setData(json.data ?? null); setError(null); })
       .catch((err) => setError(err instanceof Error ? err.message : 'Failed to fetch'))
       .finally(() => setLoading(false));

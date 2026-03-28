@@ -33,7 +33,9 @@ function fieldToZod(fieldName: string, field: SpecField): string {
       if (field.max !== undefined) chain += `.max(${field.max})`;
       if (field.type === 'email') chain += `.email()`;
       if (field.type === 'url') chain += `.url()`;
-      if (field.pattern) chain += `.regex(/${field.pattern}/)`;
+      if (field.pattern) {
+        try { new RegExp(field.pattern); chain += `.regex(/${field.pattern}/)`; } catch { /* invalid pattern, skip */ }
+      }
       break;
     case 'integer':
       chain = 'z.number().int()';

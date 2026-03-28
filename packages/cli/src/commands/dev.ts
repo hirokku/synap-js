@@ -148,7 +148,7 @@ export default defineConfig({
       console.log(`  \x1b[32m✓\x1b[0m UI: ${uiResult.files.length} files generated`);
 
       // Start API server
-      serve({ fetch: app.fetch, port }, async () => {
+      const apiServer = serve({ fetch: app.fetch, port }, async () => {
         console.log(`\n  \x1b[32m✓\x1b[0m API running at \x1b[36mhttp://localhost:${port}\x1b[0m`);
         console.log(`  \x1b[32m✓\x1b[0m Health: http://localhost:${port}/health`);
         console.log(`\n  Routes:`);
@@ -163,9 +163,10 @@ export default defineConfig({
         }
 
         // Start Vite dev server
+        let viteServer: any = null;
         try {
           const { createServer: createViteServer } = await import('vite');
-          const viteServer = await createViteServer({
+          viteServer = await createViteServer({
             root: uiDir,
             configFile: join(uiDir, 'vite.config.ts'),
             server: { port: port + 1, open: false },
@@ -178,48 +179,54 @@ export default defineConfig({
           console.log(`    Install React deps: npm install react react-dom tailwindcss @tailwindcss/vite`);
         }
 
-        // Watch specs/ for changes and regenerate
-        let regenerating = false;
-        const watchDirs = [join(specsDir, 'models'), join(specsDir, 'pages')];
-        for (const watchDir of watchDirs) {
-          if (!existsSync(watchDir)) continue;
-          watch(watchDir, { recursive: false }, async (event, filename) => {
-            if (regenerating) return;
+        // Watch specs/ for changes with debounce
+        let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+        const watchDir = specsDir;
+        if (existsSync(watchDir)) {
+          watch(watchDir, { recursive: true }, (_event, filename) => {
             if (!filename || (!filename.endsWith('.spec.yaml') && !filename.endsWith('.page.yaml'))) return;
-            regenerating = true;
-            try {
-              console.log(`\n  \x1b[90m⟳ Detected change: ${filename}\x1b[0m`);
-              const { specs: newSpecs, errors: newParseErrors } = parseAllSpecs(specsDir);
-              if (newParseErrors.length > 0) {
-                for (const err of newParseErrors) console.log(`  \x1b[31m✗\x1b[0m ${err.message}`);
-                return;
-              }
-              const { pages: newPages } = parseAllPageSpecs(specsDir);
-              const { graph: newGraph } = resolveSpecs(newSpecs);
-              const newOrdered = newGraph.order
-                .map((n: string) => newSpecs.find((s: SpecModel) => s.model === n))
-                .filter((s: SpecModel | undefined): s is SpecModel => s !== undefined);
-
-              const ctx: GeneratorContext = { specsDir, outputDir, extensionsDir, allSpecs: newOrdered, pageSpecs: newPages };
-              const generators = [ModelGenerator, ValidatorGenerator, ApiGenerator, MigrationGenerator, UiGenerator];
-              let total = 0;
-              for (const gen of generators) {
-                const result = await gen.generate(newOrdered, ctx);
-                for (const file of result.files) {
-                  const fullPath = file.path.startsWith('/') ? file.path : join(cwd, file.path);
-                  mkdirSync(dirname(fullPath), { recursive: true });
-                  writeFileSync(fullPath, file.content, 'utf-8');
-                  total++;
+            if (debounceTimer) clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(async () => {
+              try {
+                console.log(`\n  \x1b[90m⟳ Detected change: ${filename}\x1b[0m`);
+                const { specs: newSpecs, errors: newParseErrors } = parseAllSpecs(specsDir);
+                if (newParseErrors.length > 0) {
+                  for (const err of newParseErrors) console.log(`  \x1b[31m✗\x1b[0m ${err.message}`);
+                  return;
                 }
+                const { pages: newPages } = parseAllPageSpecs(specsDir);
+                const { graph: newGraph } = resolveSpecs(newSpecs);
+                const newOrdered = newGraph.order
+                  .map((n: string) => newSpecs.find((s: SpecModel) => s.model === n))
+                  .filter((s: SpecModel | undefined): s is SpecModel => s !== undefined);
+
+                const ctx: GeneratorContext = { specsDir, outputDir, extensionsDir, allSpecs: newOrdered, pageSpecs: newPages };
+                const generators = [ModelGenerator, ValidatorGenerator, ApiGenerator, MigrationGenerator, UiGenerator];
+                let total = 0;
+                for (const gen of generators) {
+                  const result = await gen.generate(newOrdered, ctx);
+                  for (const file of result.files) {
+                    const fullPath = file.path.startsWith('/') ? file.path : join(cwd, file.path);
+                    mkdirSync(dirname(fullPath), { recursive: true });
+                    writeFileSync(fullPath, file.content, 'utf-8');
+                    total++;
+                  }
+                }
+                console.log(`  \x1b[32m✓\x1b[0m Regenerated ${total} files`);
+              } catch (err) {
+                console.log(`  \x1b[31m✗\x1b[0m Regeneration failed: ${err instanceof Error ? err.message : String(err)}`);
               }
-              console.log(`  \x1b[32m✓\x1b[0m Regenerated ${total} files`);
-            } catch (err) {
-              console.log(`  \x1b[31m✗\x1b[0m Regeneration failed: ${err instanceof Error ? err.message : String(err)}`);
-            } finally {
-              regenerating = false;
-            }
+            }, 300);
           });
         }
+
+        // Graceful shutdown
+        process.on('SIGINT', async () => {
+          console.log('\n  Shutting down...');
+          if (viteServer) await viteServer.close();
+          apiServer.close();
+          process.exit(0);
+        });
 
         console.log(`  \x1b[32m✓\x1b[0m Watching specs/ for changes`);
         console.log(`\n  Press Ctrl+C to stop.\n`);
@@ -236,8 +243,8 @@ function registerModelRoutes(app: Hono, spec: SpecModel, client: any): void {
 
   if (endpoints.includes('list')) {
     app.get(route, async (c) => {
-      const page = Math.max(1, parseInt(c.req.query('page') ?? '1', 10));
-      const limit = Math.min(maxLimit, Math.max(1, parseInt(c.req.query('limit') ?? String(defaultLimit), 10)));
+      const page = Math.max(1, parseInt(c.req.query('page') ?? '1', 10) || 1);
+      const limit = Math.min(maxLimit, Math.max(1, parseInt(c.req.query('limit') ?? String(defaultLimit), 10) || defaultLimit));
       const offset = (page - 1) * limit;
 
       const data = await client.execute({ sql: `SELECT * FROM "${tableName}" LIMIT ? OFFSET ?`, args: [limit, offset] });
@@ -361,7 +368,7 @@ function buildColumns(spec: SpecModel): string {
     if (!field.nullable && !field.primary) colDef += ' NOT NULL';
     if (field.unique) colDef += ' UNIQUE';
     if (field.default !== undefined && field.default !== null) {
-      if (typeof field.default === 'string') colDef += ` DEFAULT '${field.default}'`;
+      if (typeof field.default === 'string') colDef += ` DEFAULT '${String(field.default).replace(/'/g, "''")}'`;
       else colDef += ` DEFAULT ${field.default}`;
     }
 

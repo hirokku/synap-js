@@ -86,7 +86,7 @@ function writeWindsurfConfig(cfg: McpConfigEntry): { dir: string; file: string; 
     try {
       existing = JSON.parse(readFileSync(globalPath, 'utf-8'));
     } catch {
-      // invalid JSON, overwrite
+      console.log(`  \x1b[33m!\x1b[0m Warning: Invalid JSON in ${globalPath}, will overwrite with new config`);
     }
   }
 

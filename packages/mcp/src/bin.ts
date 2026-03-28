@@ -18,7 +18,12 @@ function parseArgs(args: string[]): McpServerOptions {
   return options;
 }
 
-const options = parseArgs(process.argv.slice(2));
-const server = await createMcpServer(options);
-const transport = new StdioServerTransport();
-await server.connect(transport);
+try {
+  const options = parseArgs(process.argv.slice(2));
+  const server = await createMcpServer(options);
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+} catch (err) {
+  process.stderr.write(`Synap MCP server error: ${err instanceof Error ? err.message : String(err)}\n`);
+  process.exit(1);
+}

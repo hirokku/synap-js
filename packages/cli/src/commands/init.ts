@@ -16,6 +16,12 @@ export function registerInitCommand(program: Command): void {
     .option('--no-frontend', 'API only, no frontend')
     .action(async (name?: string, opts?: { db?: string }) => {
       const projectName = name ?? 'my-synap-app';
+
+      if (!/^[a-z0-9][a-z0-9._-]*$/.test(projectName)) {
+        console.log(`\x1b[31m✗\x1b[0m Invalid project name "${projectName}". Use lowercase letters, numbers, hyphens, and dots.`);
+        process.exit(1);
+      }
+
       const projectDir = join(process.cwd(), projectName);
       const dbProvider = opts?.db ?? 'sqlite';
 
