@@ -1,12 +1,13 @@
 import type { Command } from 'commander';
-import { join } from 'node:path';
-import { existsSync } from 'node:fs';
+import { join, dirname } from 'node:path';
+import { existsSync, writeFileSync, mkdirSync } from 'node:fs';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { serve } from '@hono/node-server';
 import { createClient } from '@libsql/client';
-import { parseAllSpecs, resolveSpecs } from '@synap-js/core';
-import type { SpecModel, SpecField } from '@synap-js/core';
+import { parseAllSpecs, parseAllPageSpecs, resolveSpecs } from '@synap-js/core';
+import type { SpecModel, SpecField, GeneratorContext } from '@synap-js/core';
+import { UiGenerator } from '@synap-js/generators';
 
 export function registerDevCommand(program: Command): void {
   program
@@ -106,9 +107,48 @@ export function registerDevCommand(program: Command): void {
         registerModelRoutes(app, spec, client);
       }
 
-      // Start server
-      serve({ fetch: app.fetch, port }, () => {
-        console.log(`\n  \x1b[32m✓\x1b[0m Server running at \x1b[36mhttp://localhost:${port}\x1b[0m`);
+      // Generate UI
+      const outputDir = join(cwd, 'src', 'generated');
+      const extensionsDir = join(cwd, 'src', 'extensions');
+      const { pages: pageSpecs } = parseAllPageSpecs(specsDir);
+      const { graph: depGraph } = resolveSpecs(specs);
+      const orderedSpecs = depGraph.order
+        .map((name: string) => specs.find((s: SpecModel) => s.model === name))
+        .filter((s: SpecModel | undefined): s is SpecModel => s !== undefined);
+
+      const uiContext: GeneratorContext = { specsDir, outputDir, extensionsDir, allSpecs: orderedSpecs, pageSpecs };
+      const uiResult = await UiGenerator.generate(orderedSpecs, uiContext);
+
+      for (const file of uiResult.files) {
+        const fullPath = file.path.startsWith('/') ? file.path : join(cwd, file.path);
+        mkdirSync(dirname(fullPath), { recursive: true });
+        writeFileSync(fullPath, file.content, 'utf-8');
+      }
+
+      // Write Vite config and Tailwind CSS
+      const uiDir = join(outputDir, 'ui');
+      writeFileSync(join(uiDir, 'vite.config.ts'), `import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    proxy: {
+      '/api': 'http://localhost:${port}',
+      '/health': 'http://localhost:${port}',
+    },
+  },
+});
+`);
+
+      writeFileSync(join(uiDir, 'app.css'), `@import "tailwindcss";
+`);
+
+      console.log(`  \x1b[32m✓\x1b[0m UI: ${uiResult.files.length} files generated`);
+
+      // Start API server
+      serve({ fetch: app.fetch, port }, async () => {
+        console.log(`\n  \x1b[32m✓\x1b[0m API running at \x1b[36mhttp://localhost:${port}\x1b[0m`);
         console.log(`  \x1b[32m✓\x1b[0m Health: http://localhost:${port}/health`);
         console.log(`\n  Routes:`);
         for (const spec of specs) {
@@ -120,6 +160,23 @@ export function registerDevCommand(program: Command): void {
             console.log(`    ${method.padEnd(6)} ${path}`);
           }
         }
+
+        // Start Vite dev server
+        try {
+          const { createServer: createViteServer } = await import('vite');
+          const viteServer = await createViteServer({
+            root: uiDir,
+            configFile: join(uiDir, 'vite.config.ts'),
+            server: { port: port + 1, open: false },
+            logLevel: 'silent',
+          });
+          await viteServer.listen();
+          console.log(`\n  \x1b[32m✓\x1b[0m Frontend at \x1b[36mhttp://localhost:${port + 1}\x1b[0m`);
+        } catch (err) {
+          console.log(`\n  \x1b[33m!\x1b[0m Frontend not started: ${err instanceof Error ? err.message : String(err)}`);
+          console.log(`    Install React deps: npm install react react-dom tailwindcss @tailwindcss/vite`);
+        }
+
         console.log(`\n  Press Ctrl+C to stop.\n`);
       });
     });

@@ -1,9 +1,9 @@
 import type { Command } from 'commander';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { parseAllSpecs, resolveSpecs } from '@synap-js/core';
+import { parseAllSpecs, parseAllPageSpecs, resolveSpecs } from '@synap-js/core';
 import type { GeneratorContext } from '@synap-js/core';
-import { ModelGenerator, ValidatorGenerator, ApiGenerator, MigrationGenerator } from '@synap-js/generators';
+import { ModelGenerator, ValidatorGenerator, ApiGenerator, MigrationGenerator, UiGenerator } from '@synap-js/generators';
 
 export function registerGenerateCommand(program: Command): void {
   program
@@ -50,11 +50,15 @@ export function registerGenerateCommand(program: Command): void {
         .map((name) => specs.find((s) => s.model === name))
         .filter((s): s is NonNullable<typeof s> => s !== undefined);
 
+      // Parse page specs
+      const { pages: pageSpecs } = parseAllPageSpecs(specsDir);
+
       const context: GeneratorContext = {
         specsDir,
         outputDir,
         extensionsDir,
         allSpecs: orderedSpecs,
+        pageSpecs,
       };
 
       // Run generators
@@ -62,7 +66,8 @@ export function registerGenerateCommand(program: Command): void {
       if (!target || target === 'models') generators.push(ModelGenerator);
       if (!target || target === 'models') generators.push(ValidatorGenerator);
       if (!target || target === 'api') generators.push(ApiGenerator);
-      if (!target) generators.push(MigrationGenerator);
+      if (!target || target === 'ui') generators.push(UiGenerator);
+      if (!target) generators.push(MigrationGenerator, UiGenerator);
 
       let totalFiles = 0;
       for (const generator of generators) {

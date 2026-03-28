@@ -30,8 +30,10 @@ export function registerInitCommand(program: Command): void {
       const dirs = [
         '',
         'specs/models',
+        'specs/pages',
         'src/generated',
         'src/extensions/api',
+        'src/extensions/ui',
         'migrations',
       ];
       for (const dir of dirs) {
@@ -57,10 +59,18 @@ export function registerInitCommand(program: Command): void {
           hono: '^4.7.0',
           'drizzle-orm': '^0.38.0',
           zod: '^3.24.0',
+          react: '^19.0.0',
+          'react-dom': '^19.0.0',
         },
         devDependencies: {
           typescript: '^5.9.0',
           '@types/node': '^25.0.0',
+          '@types/react': '^19.0.0',
+          '@types/react-dom': '^19.0.0',
+          tailwindcss: '^4.0.0',
+          '@tailwindcss/vite': '^4.0.0',
+          vite: '^6.0.0',
+          '@vitejs/plugin-react': '^4.0.0',
         },
       }, null, 2) + '\n');
 
@@ -147,6 +157,41 @@ api:
     maxLimit: 100
 `);
 
+      // Example page spec
+      writeFileSync(join(projectDir, 'specs/pages/home.page.yaml'), `page: Home
+route: /
+layout: marketing
+title: "Welcome to ${projectName}"
+sections:
+  - type: hero
+    title: "${projectName}"
+    subtitle: "Built with Synap — the AI-first framework"
+    cta:
+      text: "Get Started"
+      link: /tasks
+    background: gradient
+
+  - type: features
+    columns: 3
+    items:
+      - title: "Spec-Driven"
+        description: "Define your app in YAML, generate everything"
+        icon: "📋"
+      - title: "AI-Native"
+        description: "Any AI tool connects via MCP and operates your project"
+        icon: "🤖"
+      - title: "Full-Stack"
+        description: "API, database, frontend — all generated from specs"
+        icon: "🚀"
+
+  - type: cta
+    title: "Ready to build?"
+    subtitle: "Open this project in Claude Code, Cursor, or VS Code"
+    cta:
+      text: "View Tasks"
+      link: /tasks
+`);
+
       // synap.config.ts
       writeFileSync(join(projectDir, 'synap.config.ts'), `import { defineConfig } from '@synap-js/core';
 
@@ -194,6 +239,7 @@ TypeScript (strict), Hono, Drizzle ORM, Zod, SQLite
       console.log(`  \x1b[32m✓\x1b[0m .env`);
       console.log(`  \x1b[32m✓\x1b[0m CLAUDE.md`);
       console.log(`  \x1b[32m✓\x1b[0m specs/models/task.spec.yaml`);
+      console.log(`  \x1b[32m✓\x1b[0m specs/pages/home.page.yaml`);
 
       // Now run generate
       console.log(`\nGenerating code from specs...\n`);
