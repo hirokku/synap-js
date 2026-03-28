@@ -8,6 +8,7 @@ import { registerAddRelationTool } from './add-relation.js';
 import { registerInspectTool } from './inspect.js';
 import { registerAddPageTool } from './add-page.js';
 import { registerAddSectionTool } from './add-section.js';
+import { registerSeedDataTool } from './seed-data.js';
 
 export function registerAllTools(server: McpServer, ctx: ServerContext, options: ToolOptions): void {
   registerValidateTool(server, ctx);
@@ -17,5 +18,6 @@ export function registerAllTools(server: McpServer, ctx: ServerContext, options:
   registerAddRelationTool(server, ctx, options);
   registerAddPageTool(server, ctx, options);
   registerAddSectionTool(server, ctx, options);
+  registerSeedDataTool(server, ctx, options);
   registerInspectTool(server, ctx);
 }

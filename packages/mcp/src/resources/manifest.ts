@@ -13,7 +13,9 @@ export function registerManifestResource(server: McpServer, ctx: ServerContext):
     async (uri) => {
       try {
         const { specs } = ctx.loadSpecs();
-        return { contents: [{ uri: uri.href, text: formatManifest(specs) }] };
+        const { pages } = ctx.loadPageSpecs();
+        const seedFiles = ctx.getSeedFiles();
+        return { contents: [{ uri: uri.href, text: formatManifest(specs, pages, seedFiles) }] };
       } catch (err) {
         return { contents: [{ uri: uri.href, text: `Error loading manifest: ${err instanceof Error ? err.message : String(err)}` }] };
       }

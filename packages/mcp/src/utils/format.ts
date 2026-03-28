@@ -1,23 +1,51 @@
-import type { SpecModel, ParseError, ResolveError } from '@synap-js/core';
+import type { SpecModel, SpecPage, ParseError, ResolveError } from '@synap-js/core';
 
-export function formatManifest(specs: SpecModel[]): string {
+export function formatManifest(specs: SpecModel[], pages: SpecPage[] = [], seedFiles: string[] = []): string {
   const modelCount = specs.length;
   const fieldCount = specs.reduce((sum, s) => sum + Object.keys(s.fields).length, 0);
   const relationCount = specs.reduce((sum, s) => sum + Object.keys(s.relations ?? {}).length, 0);
   const endpointCount = specs.reduce((sum, s) => sum + (s.api?.endpoints?.length ?? 0), 0);
+  const pageCount = pages.length;
+  const sectionCount = pages.reduce((sum, p) => sum + (p.sections?.length ?? 0), 0);
 
   const lines = [
     `Synap Project`,
     `Models: ${modelCount} | Fields: ${fieldCount} | Relations: ${relationCount} | Endpoints: ${endpointCount}`,
+    `Pages: ${pageCount} | Sections: ${sectionCount} | Seed data: ${seedFiles.length}/${modelCount} models`,
     '',
     'Models:',
     ...specs.map((s) => {
       const fields = Object.keys(s.fields).length;
       const rels = Object.keys(s.relations ?? {}).length;
       const endpoints = s.api?.endpoints?.join(', ') ?? 'none';
-      return `  ${s.model} (${fields} fields${rels > 0 ? `, ${rels} relations` : ''}) — endpoints: ${endpoints}`;
+      const hasUi = s.ui?.components?.length ? 'ui' : 'no-ui';
+      const seeded = seedFiles.includes(s.model.toLowerCase()) ? 'seeded' : 'no-seed';
+      return `  ${s.model} (${fields} fields${rels > 0 ? `, ${rels} relations` : ''}) [${hasUi}, ${seeded}] — endpoints: ${endpoints}`;
     }),
   ];
+
+  if (pages.length > 0) {
+    lines.push('', 'Pages:');
+    for (const p of pages) {
+      const sects = p.sections?.map((s) => s.type).join(', ') ?? 'empty';
+      const auth = p.auth ? `[${p.auth}]` : '[public]';
+      lines.push(`  ${p.page} (${p.route}) ${auth} — sections: ${sects}`);
+    }
+  }
+
+  // Warnings
+  const warnings: string[] = [];
+  if (!pages.find((p) => p.route === '/')) warnings.push('No home page (/) defined');
+  if (!pages.find((p) => p.layout === 'app')) warnings.push('No admin/app page defined');
+  const noSeed = specs.filter((s) => !seedFiles.includes(s.model.toLowerCase()));
+  if (noSeed.length > 0) warnings.push(`No seed data for: ${noSeed.map((s) => s.model).join(', ')}`);
+  const appNoAuth = pages.filter((p) => p.layout === 'app' && !p.auth);
+  if (appNoAuth.length > 0) warnings.push(`App pages without auth: ${appNoAuth.map((p) => p.page).join(', ')}`);
+
+  if (warnings.length > 0) {
+    lines.push('', 'Warnings:');
+    for (const w of warnings) lines.push(`  ! ${w}`);
+  }
 
   return lines.join('\n');
 }

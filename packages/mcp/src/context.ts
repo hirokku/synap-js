@@ -1,6 +1,6 @@
-import { existsSync } from 'node:fs';
+import { existsSync, readdirSync } from 'node:fs';
 import { join, resolve, dirname } from 'node:path';
-import { parseAllSpecs, resolveSpecs } from '@synap-js/core';
+import { parseAllSpecs, parseAllPageSpecs, resolveSpecs } from '@synap-js/core';
 import type { ServerContext } from './types.js';
 
 export function resolveProjectRoot(startDir?: string): string {
@@ -44,9 +44,21 @@ export function createServerContext(projectRoot: string): ServerContext {
       return parseAllSpecs(specsDir);
     },
 
+    loadPageSpecs() {
+      return parseAllPageSpecs(specsDir);
+    },
+
     resolveSpecs() {
       const { specs } = parseAllSpecs(specsDir);
       return resolveSpecs(specs);
+    },
+
+    getSeedFiles() {
+      const seedsDir = join(specsDir, 'seeds');
+      if (!existsSync(seedsDir)) return [];
+      return readdirSync(seedsDir)
+        .filter((f) => f.endsWith('.seed.yaml'))
+        .map((f) => f.replace('.seed.yaml', ''));
     },
   };
 }

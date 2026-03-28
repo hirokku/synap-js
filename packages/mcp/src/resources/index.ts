@@ -7,9 +7,15 @@ import { registerExtensionsResource } from './extensions.js';
 import { registerErrorsResource } from './errors.js';
 import { registerConfigResource } from './config.js';
 import { registerPagesResource } from './pages.js';
+import { registerGuidelinesResource } from './guidelines.js';
+import { registerPatternsResource } from './patterns.js';
+import { registerCompletenessResource } from './completeness.js';
 
 export function registerAllResources(server: McpServer, ctx: ServerContext): void {
+  registerGuidelinesResource(server, ctx);
+  registerPatternsResource(server, ctx);
   registerManifestResource(server, ctx);
+  registerCompletenessResource(server, ctx);
   registerModelsResources(server, ctx);
   registerPagesResource(server, ctx);
   registerRoutesResource(server, ctx);
