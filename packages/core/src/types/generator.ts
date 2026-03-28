@@ -2,7 +2,7 @@
  * Generator interfaces for the Synap framework.
  */
 
-import type { SpecModel } from './spec.js';
+import type { SpecModel, SpecPage } from './spec.js';
 
 export interface GeneratedFile {
   path: string;
@@ -14,6 +14,7 @@ export interface GeneratorContext {
   outputDir: string;
   extensionsDir: string;
   allSpecs: SpecModel[];
+  pageSpecs?: SpecPage[];
 }
 
 export interface GeneratorResult {

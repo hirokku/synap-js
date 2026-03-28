@@ -1,12 +1,28 @@
 import type { Generator, GeneratorContext, GeneratorResult } from '@synap-js/core';
 import type { SpecModel } from '@synap-js/core';
-
-const GENERATOR_NAME = 'ui';
+import { generateBaseComponents } from './base-components.js';
+import { generateAppEntry } from './app-entry.js';
+import { generateLayouts } from './layouts.js';
+import { generateHooks } from './hooks.js';
+import { generateModelComponents } from './model-components.js';
+import { generateSectionComponents } from './section-components.js';
+import { generatePages } from './pages.js';
+import { generateRouter } from './router.js';
 
 export const UiGenerator: Generator = {
-  name: GENERATOR_NAME,
-  async generate(_specs: SpecModel[], _context: GeneratorContext): Promise<GeneratorResult> {
-    // TODO: Implement in Phase 8
-    return { files: [], errors: [], warnings: [] };
+  name: 'ui',
+  async generate(specs: SpecModel[], context: GeneratorContext): Promise<GeneratorResult> {
+    const files = [
+      ...generateBaseComponents(context),
+      ...generateLayouts(context),
+      ...generateHooks(specs, context),
+      ...generateModelComponents(specs, context),
+      ...generateSectionComponents(context),
+      ...generatePages(specs, context),
+      ...generateRouter(specs, context),
+      ...generateAppEntry(context),
+    ];
+
+    return { files, errors: [], warnings: [] };
   },
 };

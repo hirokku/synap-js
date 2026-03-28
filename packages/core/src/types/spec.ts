@@ -223,4 +223,45 @@ export interface SpecEmail {
   variables?: Record<string, string>;
 }
 
-export type Spec = SpecModel | SpecAppConfig | SpecJob | SpecEmail;
+// Page spec types for frontend generation
+
+export interface SpecPageCta {
+  text: string;
+  link: string;
+  variant?: string;
+}
+
+export interface SpecPageSection {
+  type: string;
+  title?: string;
+  subtitle?: string;
+  content?: string;
+  cta?: SpecPageCta;
+  items?: Array<Record<string, unknown>>;
+  plans?: Array<{
+    name: string;
+    price: number | string;
+    features: string[];
+    cta?: string;
+    highlighted?: boolean;
+  }>;
+  columns?: number;
+  background?: string;
+  image?: string;
+  component?: string;
+  props?: Record<string, unknown>;
+}
+
+export interface SpecPage {
+  page: string;
+  route: string;
+  layout?: 'marketing' | 'app' | 'blank';
+  title?: string;
+  description?: string;
+  auth?: AuthLevel;
+  sections?: SpecPageSection[];
+  model?: string;
+  view?: 'table' | 'form' | 'detail';
+}
+
+export type Spec = SpecModel | SpecAppConfig | SpecJob | SpecEmail | SpecPage;

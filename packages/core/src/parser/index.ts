@@ -2,7 +2,8 @@ import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { parse as parseYaml } from 'yaml';
 import { ModelSpecSchema, VALID_FIELD_TYPES } from '../schemas/model.schema.js';
-import type { SpecModel } from '../types/spec.js';
+import { PageSpecSchema } from '../schemas/page.schema.js';
+import type { SpecModel, SpecPage } from '../types/spec.js';
 import type { ZodError } from 'zod';
 
 export interface ParseError {
@@ -108,4 +109,86 @@ export function parseAllSpecs(specsDir: string): {
   }
 
   return { specs, errors };
+}
+
+export interface PageParseResult {
+  success: boolean;
+  page?: SpecPage;
+  errors: ParseError[];
+}
+
+export function parsePageSpec(filePath: string): PageParseResult {
+  const absolutePath = resolve(filePath);
+
+  let raw: string;
+  try {
+    raw = readFileSync(absolutePath, 'utf-8');
+  } catch {
+    return {
+      success: false,
+      errors: [{ file: filePath, message: `File not found: ${absolutePath}` }],
+    };
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = parseYaml(raw);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Invalid YAML syntax';
+    return {
+      success: false,
+      errors: [{ file: filePath, message: `YAML parse error: ${message}` }],
+    };
+  }
+
+  if (!parsed || typeof parsed !== 'object') {
+    return {
+      success: false,
+      errors: [{ file: filePath, message: 'Spec file is empty or not an object' }],
+    };
+  }
+
+  const result = PageSpecSchema.safeParse(parsed);
+
+  if (!result.success) {
+    return {
+      success: false,
+      errors: formatZodErrors(result.error, filePath),
+    };
+  }
+
+  const page = result.data as unknown as SpecPage;
+  return { success: true, page, errors: [] };
+}
+
+export function parseAllPageSpecs(specsDir: string): {
+  pages: SpecPage[];
+  errors: ParseError[];
+} {
+  const absoluteDir = resolve(specsDir);
+  const pages: SpecPage[] = [];
+  const errors: ParseError[] = [];
+
+  const pagesDir = join(absoluteDir, 'pages');
+
+  let files: string[];
+  try {
+    files = readdirSync(pagesDir).filter((f) => f.endsWith('.page.yaml'));
+  } catch {
+    return { pages: [], errors: [] };
+  }
+
+  for (const file of files) {
+    const filePath = join(pagesDir, file);
+    if (!statSync(filePath).isFile()) continue;
+
+    const result = parsePageSpec(filePath);
+    if (result.success && result.page) {
+      pages.push(result.page);
+    } else {
+      errors.push(...result.errors);
+    }
+  }
+
+  return { pages, errors };
 }
