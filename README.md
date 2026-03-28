@@ -148,6 +148,71 @@ npx synap dev         # API on :3000, frontend on :3001
 | `ui/pages/*.tsx` | Marketing pages + CRUD pages |
 | `ui/router.tsx` | SPA router |
 
+## Authentication
+
+Built-in JWT auth — generated automatically, enforced by spec.
+
+### Auth Levels
+
+Set per-endpoint in model specs:
+
+```yaml
+api:
+  endpoints: [list, get, create, update, delete]
+  auth:
+    list: public          # Anyone
+    get: public
+    create: authenticated # Logged-in users
+    update: owner         # Resource owner only
+    delete: admin         # Admins only
+```
+
+### Auth Endpoints
+
+The dev server provides these automatically:
+
+```bash
+# Register a new user
+curl -X POST http://localhost:3000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","name":"John","password":"mypassword"}'
+
+# Login (returns JWT token)
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","password":"mypassword"}'
+
+# Get current user (requires token)
+curl http://localhost:3000/api/auth/me \
+  -H "Authorization: Bearer <token>"
+```
+
+### Default Admin
+
+On first run, a default admin is created:
+- Email: `admin@synap.dev`
+- Password: `admin123`
+
+### Frontend Auth
+
+Generated automatically:
+- `/login` — Sign in page
+- `/register` — Create account page
+- `AuthProvider` context wraps the entire app
+- `ProtectedRoute` wrapper for auth-required pages
+- All API hooks include the JWT token automatically
+
+### Page Auth
+
+Protect pages in page specs:
+
+```yaml
+page: Admin
+route: /app
+layout: app
+auth: admin     # Only admins can access
+```
+
 ## Section Types
 
 11 built-in section types for marketing pages:
@@ -204,7 +269,11 @@ npx synap mcp setup all         # All of the above
 
 | Resource | URI | Description |
 |---|---|---|
-| Manifest | `project://manifest` | Project summary |
+| Guidelines | `project://guidelines` | AI operating manual (~250 lines) |
+| Patterns | `project://patterns/{type}` | Complete blueprints (ecommerce, blog, saas, portfolio, api) |
+| Reference | `project://reference/{topic}` | Field, section, and relation reference docs |
+| Completeness | `project://completeness` | Project health score with warnings and next steps |
+| Manifest | `project://manifest` | Project summary with seed/auth status |
 | Models | `project://models` | All models with fields and relations |
 | Model Detail | `project://models/{name}` | Full detail of a specific model |
 | Pages | `project://pages` | All page specs |
@@ -224,6 +293,7 @@ npx synap mcp setup all         # All of the above
 | `add_relation` | Create a relation between models |
 | `add_page` | Create a marketing or custom page |
 | `add_section` | Add a section to an existing page |
+| `seed_data` | Create seed data for a model |
 | `inspect` | Diagnostic inspection |
 
 ### Example AI Workflow
@@ -314,6 +384,7 @@ npx synap mcp setup <target>    # Generate MCP config for AI tools
 | Schema | [Drizzle](https://orm.drizzle.team) | Type-safe SQL |
 | Frontend | [React](https://react.dev) + [Tailwind CSS](https://tailwindcss.com) | AI-friendly, declarative |
 | Dev Server | [Vite](https://vite.dev) | Instant HMR |
+| Auth | JWT via [jose](https://github.com/panva/jose) + [bcryptjs](https://github.com/dcodeIO/bcrypt.js) | Stateless, zero native deps |
 | AI Protocol | [MCP](https://modelcontextprotocol.io) | Standard AI integration |
 | Testing | [Vitest](https://vitest.dev) | Ultra-fast ESM |
 
@@ -325,7 +396,7 @@ packages/
 ├── generators/  → @synap-js/generators  # Backend + frontend generators
 ├── runtime/     → @synap-js/runtime     # Error hierarchy, hooks, server utils
 ├── cli/         → @synap-js/cli         # CLI commands
-├── mcp/         → @synap-js/mcp         # MCP server (8 resources, 8 tools)
+├── mcp/         → @synap-js/mcp         # MCP server (15 resources, 9 tools)
 └── devtools/    → @synap-js/devtools    # Inspector (planned)
 ```
 
@@ -344,9 +415,10 @@ packages/
 | CRUD components (table, form, detail) | Done |
 | Data hooks (fetch, create, update, delete) | Done |
 | Dev server (API + Vite) | Done |
-| MCP server (8 resources, 8 tools) | Done |
+| Auth system (JWT, register, login, guards) | Done |
+| MCP server (15 resources, 9 tools) | Done |
+| AI context (guidelines, patterns, completeness) | Done |
 | 152 tests passing | Done |
-| Auth system | Planned |
 | Plugin system | Planned |
 
 ## Contributing
