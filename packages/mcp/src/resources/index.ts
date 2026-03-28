@@ -10,10 +10,12 @@ import { registerPagesResource } from './pages.js';
 import { registerGuidelinesResource } from './guidelines.js';
 import { registerPatternsResource } from './patterns.js';
 import { registerCompletenessResource } from './completeness.js';
+import { registerReferenceResources } from './reference.js';
 
 export function registerAllResources(server: McpServer, ctx: ServerContext): void {
   registerGuidelinesResource(server, ctx);
   registerPatternsResource(server, ctx);
+  registerReferenceResources(server, ctx);
   registerManifestResource(server, ctx);
   registerCompletenessResource(server, ctx);
   registerModelsResources(server, ctx);

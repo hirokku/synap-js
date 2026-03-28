@@ -1,6 +1,6 @@
 {
   "name": "@synap-js/mcp",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "type": "module",
   "description": "MCP server for the Synap framework",
   "main": "./dist/index.js",
