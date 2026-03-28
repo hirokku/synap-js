@@ -6,20 +6,20 @@ export function generateRouter(specs: SpecModel[], context: GeneratorContext): G
   const header = generatedHeader('synap:ui');
   const pageSpecs = context.pageSpecs ?? [];
 
-  const imports: string[] = [];
+  const importSet = new Set<string>();
   const routes: string[] = [];
 
   // Marketing/custom page routes
   for (const page of pageSpecs) {
     const kebab = toKebabCase(page.page);
-    imports.push(`import { ${page.page}Page } from './pages/${kebab}-page.js';`);
+    importSet.add(`import { ${page.page}Page } from './pages/${kebab}-page.js';`);
     routes.push(`  { path: '${page.route}', component: ${page.page}Page }`);
   }
 
   // Admin dashboard (auto-generated if there are API models)
   const apiSpecs = specs.filter((s) => s.api?.endpoints?.length);
   if (apiSpecs.length > 0) {
-    imports.push(`import { AdminPage } from './pages/admin-page.js';`);
+    importSet.add(`import { AdminPage } from './pages/admin-page.js';`);
     routes.push(`  { path: '/app', component: AdminPage }`);
   }
 
@@ -29,21 +29,21 @@ export function generateRouter(specs: SpecModel[], context: GeneratorContext): G
     const model = spec.model;
     const kebab = toKebabCase(model);
 
-    imports.push(`import { ${model}ListPage } from './pages/${kebab}-list-page.js';`);
+    importSet.add(`import { ${model}ListPage } from './pages/${kebab}-list-page.js';`);
     routes.push(`  { path: '/${kebab}s', component: ${model}ListPage }`);
 
     if (spec.api.endpoints.includes('create')) {
-      imports.push(`import { ${model}CreatePage } from './pages/${kebab}-create-page.js';`);
+      importSet.add(`import { ${model}CreatePage } from './pages/${kebab}-create-page.js';`);
       routes.push(`  { path: '/${kebab}s/new', component: ${model}CreatePage }`);
     }
 
     if (spec.api.endpoints.includes('get')) {
-      imports.push(`import { ${model}DetailPage } from './pages/${kebab}-detail-page.js';`);
+      importSet.add(`import { ${model}DetailPage } from './pages/${kebab}-detail-page.js';`);
       routes.push(`  { path: '/${kebab}s/:id', component: ${model}DetailPage, hasId: true }`);
     }
 
     if (spec.api.endpoints.includes('update')) {
-      imports.push(`import { ${model}EditPage } from './pages/${kebab}-edit-page.js';`);
+      importSet.add(`import { ${model}EditPage } from './pages/${kebab}-edit-page.js';`);
       routes.push(`  { path: '/${kebab}s/:id/edit', component: ${model}EditPage, hasId: true }`);
     }
   }
@@ -52,7 +52,7 @@ export function generateRouter(specs: SpecModel[], context: GeneratorContext): G
     path: `${dir}/router.tsx`,
     content: `${header}
 import React, { useState, useEffect } from 'react';
-${imports.join('\n')}
+${[...importSet].join('\n')}
 
 interface Route {
   path: string;
