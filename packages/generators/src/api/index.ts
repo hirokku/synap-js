@@ -120,26 +120,40 @@ function generateRoutes(spec: SpecModel, context: GeneratorContext): GeneratedFi
   const endpoints = spec.api?.endpoints ?? [];
   const lowerName = name.charAt(0).toLowerCase() + name.slice(1);
 
+  const auth = spec.api?.auth;
   const routes: string[] = [];
+  let needsAuthImport = false;
+
+  const guard = (endpoint: string): string => {
+    const level = auth?.[endpoint as keyof typeof auth];
+    if (!level || level === 'public') return '';
+    needsAuthImport = true;
+    if (level === 'authenticated') return 'requireAuth, ';
+    if (level === 'admin') return "requireAuth, requireRole('admin'), ";
+    if (level === 'owner') return "requireAuth, ";
+    return '';
+  };
 
   if (endpoints.includes('list')) {
-    routes.push(`app.get('${routePath}', (c) => ${lowerName}Controller.list(c));`);
+    routes.push(`app.get('${routePath}', ${guard('list')}(c) => ${lowerName}Controller.list(c));`);
   }
   if (endpoints.includes('get')) {
-    routes.push(`app.get('${routePath}/:id', (c) => ${lowerName}Controller.get(c));`);
+    routes.push(`app.get('${routePath}/:id', ${guard('get')}(c) => ${lowerName}Controller.get(c));`);
   }
   if (endpoints.includes('create')) {
-    routes.push(`app.post('${routePath}', (c) => ${lowerName}Controller.create(c));`);
+    routes.push(`app.post('${routePath}', ${guard('create')}(c) => ${lowerName}Controller.create(c));`);
   }
   if (endpoints.includes('update')) {
-    routes.push(`app.put('${routePath}/:id', (c) => ${lowerName}Controller.update(c));`);
+    routes.push(`app.put('${routePath}/:id', ${guard('update')}(c) => ${lowerName}Controller.update(c));`);
   }
   if (endpoints.includes('delete')) {
-    routes.push(`app.delete('${routePath}/:id', (c) => ${lowerName}Controller.delete(c));`);
+    routes.push(`app.delete('${routePath}/:id', ${guard('delete')}(c) => ${lowerName}Controller.delete(c));`);
   }
 
+  const authImport = needsAuthImport ? `\nimport { requireAuth, requireRole } from '@synap-js/runtime';` : '';
+
   const content = `${header}import { Hono } from 'hono';
-import { ${lowerName}Controller } from './${fileName}.controller.js';
+import { ${lowerName}Controller } from './${fileName}.controller.js';${authImport}
 
 export function register${name}Routes(app: Hono) {
   ${routes.join('\n  ')}
@@ -173,11 +187,14 @@ function generateAppEntry(_specs: SpecModel[], context: GeneratorContext): Gener
   const content = `${generatedHeader('specs/')}import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { registerAllRoutes } from './api/index.js';
+import { authMiddleware } from './auth/auth.middleware.js';
+import { registerAuthRoutes } from './auth/auth.routes.js';
 
 const app = new Hono();
 
 // Middleware
 app.use('*', cors());
+app.use('*', authMiddleware);
 
 // Error handler
 app.onError((err, c) => {
@@ -190,6 +207,9 @@ app.onError((err, c) => {
 
 // Health check
 app.get('/health', (c) => c.json({ status: 'ok', uptime: process.uptime() }));
+
+// Auth routes
+registerAuthRoutes(app, null); // Pass db instance in production
 
 // API routes
 const api = new Hono();

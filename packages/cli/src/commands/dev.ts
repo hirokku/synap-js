@@ -1,6 +1,7 @@
 import type { Command } from 'commander';
+import { randomUUID } from 'node:crypto';
 import { join, dirname } from 'node:path';
-import { existsSync, writeFileSync, mkdirSync, watch } from 'node:fs';
+import { existsSync, writeFileSync, readFileSync, mkdirSync, watch, appendFileSync } from 'node:fs';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { serve } from '@hono/node-server';
@@ -8,6 +9,8 @@ import { createClient } from '@libsql/client';
 import { parseAllSpecs, parseAllPageSpecs, resolveSpecs } from '@synap-js/core';
 import type { SpecModel, SpecField, GeneratorContext } from '@synap-js/core';
 import { ModelGenerator, ValidatorGenerator, ApiGenerator, MigrationGenerator, UiGenerator } from '@synap-js/generators';
+import { hashPassword, comparePassword, signToken, verifyToken } from '@synap-js/runtime';
+import type { AuthUser } from '@synap-js/runtime';
 
 export function registerDevCommand(program: Command): void {
   program
@@ -63,9 +66,57 @@ export function registerDevCommand(program: Command): void {
         console.log(`  \x1b[32m✓\x1b[0m Table: ${tableName}`);
       }
 
+      // Create users table for auth
+      await client.execute(`CREATE TABLE IF NOT EXISTS "users" (
+        "id" TEXT PRIMARY KEY,
+        "email" TEXT NOT NULL UNIQUE,
+        "password" TEXT NOT NULL,
+        "name" TEXT NOT NULL,
+        "role" TEXT NOT NULL DEFAULT 'user',
+        "created_at" TEXT NOT NULL DEFAULT (datetime('now')),
+        "updated_at" TEXT NOT NULL DEFAULT (datetime('now'))
+      )`);
+
+      // JWT_SECRET — read from env or generate
+      let jwtSecret = process.env['JWT_SECRET'];
+      if (!jwtSecret) {
+        jwtSecret = randomUUID() + randomUUID();
+        const envPath = join(cwd, '.env');
+        if (existsSync(envPath)) {
+          appendFileSync(envPath, `\nJWT_SECRET=${jwtSecret}\n`);
+        } else {
+          writeFileSync(envPath, `JWT_SECRET=${jwtSecret}\n`);
+        }
+        console.log(`  \x1b[32m✓\x1b[0m Generated JWT_SECRET`);
+      }
+
+      // Seed default admin if users table is empty
+      const userCount = await client.execute('SELECT COUNT(*) as count FROM "users"');
+      if (Number(userCount.rows[0]?.count ?? 0) === 0) {
+        const adminId = randomUUID();
+        const adminHash = await hashPassword('admin123');
+        await client.execute({
+          sql: 'INSERT INTO "users" ("id", "email", "name", "password", "role") VALUES (?, ?, ?, ?, ?)',
+          args: [adminId, 'admin@synap.dev', 'Admin', adminHash, 'admin'],
+        });
+        console.log(`  \x1b[32m✓\x1b[0m Default admin: admin@synap.dev / admin123`);
+      }
+
       // Build Hono app
       const app = new Hono();
       app.use('*', cors());
+
+      // Auth middleware — extract user from JWT on every request
+      app.use('*', async (c, next) => {
+        const header = c.req.header('Authorization');
+        if (header?.startsWith('Bearer ')) {
+          try {
+            const payload = await verifyToken(header.slice(7), jwtSecret!);
+            c.set('user', { id: payload.sub, email: payload.email, name: payload.name, role: payload.role });
+          } catch { c.set('user', null); }
+        } else { c.set('user', null); }
+        await next();
+      });
 
       // Error handler
       app.onError((err, c) => {
@@ -100,6 +151,46 @@ export function registerDevCommand(program: Command): void {
 
         return c.html(buildDashboardHTML({ port, models, routes, dbPath }));
       });
+
+      // Auth routes
+      app.post('/api/auth/register', async (c) => {
+        const body = await c.req.json();
+        const { email, name, password } = body;
+        if (!email || !password || !name) return c.json({ status: 400, code: 'VALIDATION_ERROR', message: 'Email, name, and password required' }, 400);
+        const hashed = await hashPassword(password);
+        const id = randomUUID();
+        try {
+          await client.execute({ sql: 'INSERT INTO "users" ("id", "email", "name", "password", "role") VALUES (?, ?, ?, ?, ?)', args: [id, email, name, hashed, 'user'] });
+        } catch (err: any) {
+          if (err?.message?.includes('UNIQUE')) return c.json({ status: 409, code: 'EMAIL_CONFLICT', message: 'Email already registered' }, 409);
+          throw err;
+        }
+        const token = await signToken({ sub: id, email, name, role: 'user' }, jwtSecret!);
+        return c.json({ data: { token, user: { id, email, name, role: 'user' } } }, 201);
+      });
+
+      app.post('/api/auth/login', async (c) => {
+        const body = await c.req.json();
+        const { email, password } = body;
+        if (!email || !password) return c.json({ status: 400, code: 'VALIDATION_ERROR', message: 'Email and password required' }, 400);
+        const result = await client.execute({ sql: 'SELECT * FROM "users" WHERE "email" = ?', args: [email] });
+        const user = result.rows[0];
+        if (!user || !(await comparePassword(password, user['password'] as string))) {
+          return c.json({ status: 401, code: 'INVALID_CREDENTIALS', message: 'Invalid email or password' }, 401);
+        }
+        const token = await signToken({ sub: user['id'] as string, email: user['email'] as string, name: user['name'] as string, role: user['role'] as string }, jwtSecret!);
+        return c.json({ data: { token, user: { id: user['id'], email: user['email'], name: user['name'], role: user['role'] } } });
+      });
+
+      app.get('/api/auth/me', async (c) => {
+        const user = c.get('user' as never) as AuthUser | null;
+        if (!user) return c.json({ status: 401, code: 'AUTHENTICATION_REQUIRED', message: 'Authentication required' }, 401);
+        const result = await client.execute({ sql: 'SELECT "id", "email", "name", "role", "created_at" FROM "users" WHERE "id" = ?', args: [user.id] });
+        if (result.rows.length === 0) return c.json({ status: 404, message: 'User not found' }, 404);
+        return c.json({ data: result.rows[0] });
+      });
+
+      console.log(`  \x1b[32m✓\x1b[0m Auth: /api/auth/register, /api/auth/login, /api/auth/me`);
 
       // Register CRUD routes for each model
       for (const spec of specs) {

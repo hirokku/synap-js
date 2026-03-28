@@ -1,6 +1,6 @@
 {
   "name": "@synap-js/cli",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "type": "module",
   "description": "CLI for the Synap framework",
   "main": "./dist/index.js",
@@ -26,12 +26,15 @@
     "@synap-js/generators": "workspace:*",
     "@synap-js/runtime": "workspace:*",
     "@vitejs/plugin-react": "^6.0.1",
+    "bcryptjs": "^3.0.3",
     "commander": "^13.1.0",
     "drizzle-orm": "^0.38.4",
     "hono": "^4.12.9",
+    "jose": "^6.2.2",
     "vite": "^8.0.3"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
     "tsup": "^8.4.0",
     "typescript": "^5.9.0"
   }

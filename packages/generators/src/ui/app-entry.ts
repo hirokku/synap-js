@@ -43,10 +43,15 @@ createRoot(document.getElementById('root')!).render(
     path: `${dir}/app.tsx`,
     content: `${header}
 import React from 'react';
+import { AuthProvider } from './auth/auth-context.js';
 import { Router } from './router.js';
 
 export function App() {
-  return <Router />;
+  return (
+    <AuthProvider>
+      <Router />
+    </AuthProvider>
+  );
 }
 `,
   });

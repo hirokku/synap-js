@@ -176,6 +176,117 @@ ${modelCards}
     });
   }
 
+  // Auth pages (login + register)
+  files.push({
+    path: `${dir}/login-page.tsx`,
+    content: `${header}
+import React, { useState } from 'react';
+import { useAuth } from '../auth/auth-context.js';
+import { Input } from '../components/input.js';
+import { Button } from '../components/button.js';
+import { Card } from '../components/card.js';
+import { BlankLayout } from '../layouts/blank-layout.js';
+
+export function LoginPage() {
+  const { login } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    const result = await login(email, password);
+    if (result.success) {
+      window.location.href = '/app';
+    } else {
+      setError(result.error ?? 'Login failed');
+    }
+    setLoading(false);
+  };
+
+  return (
+    <BlankLayout>
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="w-full max-w-md">
+          <h1 className="mb-8 text-center text-3xl font-bold text-gray-900">Sign In</h1>
+          <Card>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
+              <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <Input label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+              <Button type="submit" className="w-full" disabled={loading}>{loading ? 'Signing in...' : 'Sign In'}</Button>
+            </form>
+            <p className="mt-4 text-center text-sm text-gray-600">
+              Don't have an account? <a href="/register" className="text-blue-600 hover:underline">Register</a>
+            </p>
+          </Card>
+        </div>
+      </div>
+    </BlankLayout>
+  );
+}
+`,
+  });
+
+  files.push({
+    path: `${dir}/register-page.tsx`,
+    content: `${header}
+import React, { useState } from 'react';
+import { useAuth } from '../auth/auth-context.js';
+import { Input } from '../components/input.js';
+import { Button } from '../components/button.js';
+import { Card } from '../components/card.js';
+import { BlankLayout } from '../layouts/blank-layout.js';
+
+export function RegisterPage() {
+  const { register } = useAuth();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    const result = await register(email, name, password);
+    if (result.success) {
+      window.location.href = '/app';
+    } else {
+      setError(result.error ?? 'Registration failed');
+    }
+    setLoading(false);
+  };
+
+  return (
+    <BlankLayout>
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="w-full max-w-md">
+          <h1 className="mb-8 text-center text-3xl font-bold text-gray-900">Create Account</h1>
+          <Card>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>}
+              <Input label="Name" value={name} onChange={(e) => setName(e.target.value)} required />
+              <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <Input label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+              <Button type="submit" className="w-full" disabled={loading}>{loading ? 'Creating account...' : 'Create Account'}</Button>
+            </form>
+            <p className="mt-4 text-center text-sm text-gray-600">
+              Already have an account? <a href="/login" className="text-blue-600 hover:underline">Sign In</a>
+            </p>
+          </Card>
+        </div>
+      </div>
+    </BlankLayout>
+  );
+}
+`,
+  });
+
   return files;
 }
 

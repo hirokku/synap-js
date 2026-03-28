@@ -9,6 +9,12 @@ export function generateRouter(specs: SpecModel[], context: GeneratorContext): G
   const importSet = new Set<string>();
   const routes: string[] = [];
 
+  // Auth pages
+  importSet.add(`import { LoginPage } from './pages/login-page.js';`);
+  importSet.add(`import { RegisterPage } from './pages/register-page.js';`);
+  routes.push(`  { path: '/login', component: LoginPage }`);
+  routes.push(`  { path: '/register', component: RegisterPage }`);
+
   // Marketing/custom page routes
   for (const page of pageSpecs) {
     const kebab = toKebabCase(page.page);

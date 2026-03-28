@@ -8,6 +8,7 @@ import { generateModelComponents } from './model-components.js';
 import { generateSectionComponents } from './section-components.js';
 import { generatePages } from './pages.js';
 import { generateRouter } from './router.js';
+import { generateAuthComponents } from './auth-components.js';
 
 export const UiGenerator: Generator = {
   name: 'ui',
@@ -15,6 +16,7 @@ export const UiGenerator: Generator = {
     const files = [
       ...generateBaseComponents(context),
       ...generateLayouts(context),
+      ...generateAuthComponents(context),
       ...generateHooks(specs, context),
       ...generateModelComponents(specs, context),
       ...generateSectionComponents(context),

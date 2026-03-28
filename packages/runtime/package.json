@@ -1,6 +1,6 @@
 {
   "name": "@synap-js/runtime",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "type": "module",
   "description": "Runtime for Synap-generated applications",
   "main": "./dist/index.js",
@@ -18,11 +18,14 @@
   },
   "dependencies": {
     "@synap-js/core": "workspace:*",
-    "hono": "^4.7.0",
+    "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.38.0",
+    "hono": "^4.7.0",
+    "jose": "^6.2.2",
     "zod": "^3.24.0"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
     "tsup": "^8.4.0",
     "typescript": "^5.9.0"
   }

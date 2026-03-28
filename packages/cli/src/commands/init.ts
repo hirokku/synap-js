@@ -115,10 +115,12 @@ export function registerInitCommand(program: Command): void {
       ].join('\n') + '\n');
 
       // .env
+      const { randomUUID: genUUID } = await import('node:crypto');
       writeFileSync(join(projectDir, '.env'), [
         `DATABASE_URL=${dbProvider === 'sqlite' ? 'file:./dev.db' : 'postgresql://localhost:5432/' + projectName}`,
         'PORT=3000',
         'NODE_ENV=development',
+        `JWT_SECRET=${genUUID()}${genUUID()}`,
       ].join('\n') + '\n');
 
       // .env.example
