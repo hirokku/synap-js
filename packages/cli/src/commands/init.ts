@@ -52,6 +52,7 @@ export function registerInitCommand(program: Command): void {
         },
         dependencies: {
           '@synap-js/cli': 'latest',
+          '@synap-js/mcp': 'latest',
           '@synap-js/runtime': 'latest',
           hono: '^4.7.0',
           'drizzle-orm': '^0.38.0',
