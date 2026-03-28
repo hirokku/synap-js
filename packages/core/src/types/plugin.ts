@@ -1,5 +1,5 @@
 /**
- * Plugin interfaces for the Kodeai framework.
+ * Plugin interfaces for the Synap framework.
  */
 
 import type { Generator, GeneratedFile, GeneratorError } from './generator.js';

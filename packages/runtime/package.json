@@ -1,8 +1,8 @@
 {
-  "name": "@kodeai/runtime",
+  "name": "@synap-js/runtime",
   "version": "0.0.1",
   "type": "module",
-  "description": "Runtime for Kodeai-generated applications",
+  "description": "Runtime for Synap-generated applications",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -14,7 +14,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@kodeai/core": "workspace:*",
+    "@synap-js/core": "workspace:*",
     "hono": "^4.7.0",
     "drizzle-orm": "^0.38.0",
     "zod": "^3.24.0"

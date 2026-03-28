@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { program } from '../src/index.js';
 
-describe('@kodeai/cli', () => {
+describe('@synap-js/cli', () => {
   it('has the correct name', () => {
-    expect(program.name()).toBe('kodeai');
+    expect(program.name()).toBe('synap');
   });
 
   it('registers core commands', () => {

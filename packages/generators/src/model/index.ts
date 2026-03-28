@@ -1,5 +1,5 @@
-import type { Generator, GeneratorContext, GeneratorResult, GeneratedFile } from '@kodeai/core';
-import type { SpecModel } from '@kodeai/core';
+import type { Generator, GeneratorContext, GeneratorResult, GeneratedFile } from '@synap-js/core';
+import type { SpecModel } from '@synap-js/core';
 import { specTypeToTS, specTypeToDrizzle } from '../utils/type-map.js';
 import { toSnakeCase, toTableName, generatedHeader, toKebabCase } from '../utils/naming.js';
 

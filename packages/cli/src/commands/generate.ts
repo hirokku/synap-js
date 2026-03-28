@@ -1,9 +1,9 @@
 import type { Command } from 'commander';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { parseAllSpecs, resolveSpecs } from '@kodeai/core';
-import type { GeneratorContext } from '@kodeai/core';
-import { ModelGenerator, ValidatorGenerator, ApiGenerator, MigrationGenerator } from '@kodeai/generators';
+import { parseAllSpecs, resolveSpecs } from '@synap-js/core';
+import type { GeneratorContext } from '@synap-js/core';
+import { ModelGenerator, ValidatorGenerator, ApiGenerator, MigrationGenerator } from '@synap-js/generators';
 
 export function registerGenerateCommand(program: Command): void {
   program

@@ -1,5 +1,5 @@
 /**
- * Kodeai DevTools
+ * Synap DevTools
  * Dev server, hot reload, API inspector.
  * Implemented in Phase 9.
  */

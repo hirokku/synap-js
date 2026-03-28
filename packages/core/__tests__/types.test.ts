@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import type { SpecModel, SpecField, KodeaiConfig } from '../src/index.js';
+import type { SpecModel, SpecField, SynapConfig } from '../src/index.js';
 import { defineConfig, resolveSpecs, parseSpec } from '../src/index.js';
 
-describe('@kodeai/core types', () => {
+describe('@synap-js/core types', () => {
   it('SpecModel is structurally valid', () => {
     const spec: SpecModel = {
       model: 'Product',
@@ -40,7 +40,7 @@ describe('@kodeai/core types', () => {
   });
 
   it('defineConfig returns the config', () => {
-    const config: KodeaiConfig = defineConfig({
+    const config: SynapConfig = defineConfig({
       database: {
         provider: 'postgresql',
         url: 'postgresql://localhost/test',

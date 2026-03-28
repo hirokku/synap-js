@@ -5,8 +5,8 @@ import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { serve } from '@hono/node-server';
 import { createClient } from '@libsql/client';
-import { parseAllSpecs, resolveSpecs } from '@kodeai/core';
-import type { SpecModel, SpecField } from '@kodeai/core';
+import { parseAllSpecs, resolveSpecs } from '@synap-js/core';
+import type { SpecModel, SpecField } from '@synap-js/core';
 
 export function registerDevCommand(program: Command): void {
   program
@@ -18,12 +18,12 @@ export function registerDevCommand(program: Command): void {
       const specsDir = join(cwd, 'specs');
 
       if (!existsSync(specsDir)) {
-        console.log('\x1b[31m✗\x1b[0m No specs/ directory found. Run "kodeai init" first.');
+        console.log('\x1b[31m✗\x1b[0m No specs/ directory found. Run "synap init" first.');
         process.exit(1);
       }
 
       const port = parseInt(opts.port, 10);
-      console.log(`\n\x1b[36mKodeai Dev Server\x1b[0m\n`);
+      console.log(`\n\x1b[36mSynap Dev Server\x1b[0m\n`);
 
       // Parse specs
       const { specs, errors: parseErrors } = parseAllSpecs(specsDir);
@@ -76,6 +76,29 @@ export function registerDevCommand(program: Command): void {
 
       // Health check
       app.get('/health', (c) => c.json({ status: 'ok', uptime: process.uptime() }));
+
+      // Dev dashboard
+      app.get('/', (c) => {
+        const routes: { method: string; path: string }[] = [];
+        for (const spec of specs) {
+          if (!spec.api?.endpoints || spec.api.endpoints.length === 0) continue;
+          const route = `/api/${toKebabCase(spec.model)}s`;
+          for (const ep of spec.api.endpoints) {
+            const method = ep === 'list' ? 'GET' : ep === 'get' ? 'GET' : ep === 'create' ? 'POST' : ep === 'update' ? 'PUT' : 'DELETE';
+            const path = (ep === 'get' || ep === 'update' || ep === 'delete') ? `${route}/:id` : route;
+            routes.push({ method, path });
+          }
+        }
+
+        const models = specs.map((s) => ({
+          name: s.model,
+          fields: Object.keys(s.fields).length,
+          endpoints: s.api?.endpoints?.length ?? 0,
+          table: s.table ?? toTableName(s.model),
+        }));
+
+        return c.html(buildDashboardHTML({ port, models, routes, dbPath }));
+      });
 
       // Register CRUD routes for each model
       for (const spec of specs) {
@@ -289,4 +312,203 @@ function toKebabCase(str: string): string {
 function toTableName(model: string): string {
   const snake = toSnakeCase(model);
   return snake.endsWith('s') ? snake : snake + 's';
+}
+
+interface DashboardData {
+  port: number;
+  models: { name: string; fields: number; endpoints: number; table: string }[];
+  routes: { method: string; path: string }[];
+  dbPath: string;
+}
+
+function buildDashboardHTML(data: DashboardData): string {
+  const methodColor: Record<string, string> = {
+    GET: '#10b981',
+    POST: '#3b82f6',
+    PUT: '#f59e0b',
+    DELETE: '#ef4444',
+  };
+
+  const routeRows = data.routes
+    .map((r) => {
+      const color = methodColor[r.method] ?? '#888';
+      const isClickable = r.method === 'GET' && !r.path.includes(':');
+      const pathHtml = isClickable
+        ? `<a href="${r.path}" target="_blank" style="color:#e2e8f0;text-decoration:underline">${r.path}</a>`
+        : `<span style="color:#94a3b8">${r.path}</span>`;
+      return `<tr><td><span style="background:${color};color:#fff;padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600">${r.method}</span></td><td style="padding-left:12px">${pathHtml}</td></tr>`;
+    })
+    .join('');
+
+  const modelCards = data.models
+    .map(
+      (m) => `
+      <div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:16px;min-width:200px">
+        <div style="font-size:18px;font-weight:600;color:#f1f5f9;margin-bottom:8px">${m.name}</div>
+        <div style="display:flex;gap:16px;font-size:13px;color:#94a3b8">
+          <span>${m.fields} fields</span>
+          <span>${m.endpoints} endpoints</span>
+        </div>
+        <div style="font-size:12px;color:#64748b;margin-top:8px">table: ${m.table}</div>
+      </div>`
+    )
+    .join('');
+
+  const curlModel = data.models[0];
+  const curlRoute = curlModel ? `/api/${toKebabCase(curlModel.name)}s` : '/api/items';
+  const curlField = curlModel
+    ? Object.keys(data.models[0] ? {} : {}).length > 0
+      ? 'name'
+      : 'title'
+    : 'title';
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Synap Dev Server</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+    a { color: #38bdf8; }
+    code {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 6px;
+      padding: 12px 16px;
+      display: block;
+      font-size: 13px;
+      color: #94a3b8;
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .container { max-width: 720px; width: 100%; }
+    .header { text-align: center; margin-bottom: 40px; }
+    .logo {
+      font-size: 48px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #38bdf8, #818cf8, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -2px;
+    }
+    .tagline { color: #64748b; font-size: 14px; margin-top: 8px; }
+    .section { margin-bottom: 32px; }
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #64748b;
+      margin-bottom: 12px;
+    }
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+    }
+    .status-item {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 14px;
+      text-align: center;
+    }
+    .status-value { font-size: 20px; font-weight: 700; color: #10b981; }
+    .status-label { font-size: 11px; color: #64748b; margin-top: 4px; text-transform: uppercase; }
+    .models-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    td { padding: 6px 0; font-size: 14px; font-family: monospace; }
+    .pulse {
+      display: inline-block;
+      width: 8px; height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      margin-right: 8px;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .footer { margin-top: 48px; text-align: center; font-size: 12px; color: #475569; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">Synap</div>
+      <div class="tagline">AI-first full-stack TypeScript framework</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Server Status</div>
+      <div class="status-grid">
+        <div class="status-item">
+          <div class="status-value"><span class="pulse"></span>Live</div>
+          <div class="status-label">Status</div>
+        </div>
+        <div class="status-item">
+          <div class="status-value">${data.port}</div>
+          <div class="status-label">Port</div>
+        </div>
+        <div class="status-item">
+          <div class="status-value">${data.models.length}</div>
+          <div class="status-label">Models</div>
+        </div>
+        <div class="status-item">
+          <div class="status-value">${data.routes.length}</div>
+          <div class="status-label">Routes</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Models</div>
+      <div class="models-grid">${modelCards}</div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">API Routes</div>
+      <div style="background:#1e293b;border:1px solid #334155;border-radius:8px;padding:16px">
+        <table>${routeRows}</table>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Quick Start</div>
+      <code>curl http://localhost:${data.port}${curlRoute}
+
+curl -X POST http://localhost:${data.port}${curlRoute} \\
+  -H "Content-Type: application/json" \\
+  -d '{"${curlField}":"Hello from Synap"}'
+
+curl http://localhost:${data.port}/health</code>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Database</div>
+      <div style="font-size:13px;color:#94a3b8;font-family:monospace">${data.dbPath}</div>
+    </div>
+
+    <div class="footer">
+      Synap v0.0.1 &middot; <a href="/health">/health</a> &middot; Dev mode
+    </div>
+  </div>
+</body>
+</html>`;
 }

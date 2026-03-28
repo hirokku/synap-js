@@ -1,8 +1,8 @@
 {
-  "name": "@kodeai/generators",
+  "name": "@synap-js/generators",
   "version": "0.0.1",
   "type": "module",
-  "description": "Code generators for the Kodeai framework",
+  "description": "Code generators for the Synap framework",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -14,7 +14,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@kodeai/core": "workspace:*"
+    "@synap-js/core": "workspace:*"
   },
   "devDependencies": {
     "tsup": "^8.4.0",

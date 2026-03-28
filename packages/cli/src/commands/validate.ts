@@ -1,5 +1,5 @@
 import type { Command } from 'commander';
-import { parseSpec, parseAllSpecs, resolveSpecs } from '@kodeai/core';
+import { parseSpec, parseAllSpecs, resolveSpecs } from '@synap-js/core';
 
 export function registerValidateCommand(program: Command): void {
   program

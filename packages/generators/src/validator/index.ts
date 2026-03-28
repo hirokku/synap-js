@@ -1,5 +1,5 @@
-import type { Generator, GeneratorContext, GeneratorResult, GeneratedFile } from '@kodeai/core';
-import type { SpecModel, SpecField } from '@kodeai/core';
+import type { Generator, GeneratorContext, GeneratorResult, GeneratedFile } from '@synap-js/core';
+import type { SpecModel, SpecField } from '@synap-js/core';
 import { generatedHeader, toKebabCase } from '../utils/naming.js';
 
 export const ValidatorGenerator: Generator = {

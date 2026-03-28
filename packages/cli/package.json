@@ -1,12 +1,12 @@
 {
-  "name": "@kodeai/cli",
+  "name": "@synap-js/cli",
   "version": "0.0.1",
   "type": "module",
-  "description": "CLI for the Kodeai framework",
+  "description": "CLI for the Synap framework",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "kodeai": "./dist/bin.js"
+    "synap": "./dist/bin.js"
   },
   "exports": {
     ".": {
@@ -21,9 +21,9 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.19.11",
-    "@kodeai/core": "workspace:*",
-    "@kodeai/generators": "workspace:*",
-    "@kodeai/runtime": "workspace:*",
+    "@synap-js/core": "workspace:*",
+    "@synap-js/generators": "workspace:*",
+    "@synap-js/runtime": "workspace:*",
     "@libsql/client": "^0.17.2",
     "commander": "^13.1.0",
     "drizzle-orm": "^0.38.4",

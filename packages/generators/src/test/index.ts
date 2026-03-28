@@ -1,5 +1,5 @@
-import type { Generator, GeneratorContext, GeneratorResult } from '@kodeai/core';
-import type { SpecModel } from '@kodeai/core';
+import type { Generator, GeneratorContext, GeneratorResult } from '@synap-js/core';
+import type { SpecModel } from '@synap-js/core';
 
 const GENERATOR_NAME = 'test';
 

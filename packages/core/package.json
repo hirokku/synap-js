@@ -1,8 +1,8 @@
 {
-  "name": "@kodeai/core",
+  "name": "@synap-js/core",
   "version": "0.0.1",
   "type": "module",
-  "description": "Core types, parser, and resolver for the Kodeai framework",
+  "description": "Core types, parser, and resolver for the Synap framework",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {

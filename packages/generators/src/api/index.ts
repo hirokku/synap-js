@@ -1,5 +1,5 @@
-import type { Generator, GeneratorContext, GeneratorResult, GeneratedFile } from '@kodeai/core';
-import type { SpecModel } from '@kodeai/core';
+import type { Generator, GeneratorContext, GeneratorResult, GeneratedFile } from '@synap-js/core';
+import type { SpecModel } from '@synap-js/core';
 import { toKebabCase, toTableName, toSnakeCase, generatedHeader } from '../utils/naming.js';
 
 export const ApiGenerator: Generator = {
@@ -102,7 +102,7 @@ import { eq, sql } from 'drizzle-orm';
 import { db } from '../../db.js';
 import { ${tableName} } from '../models/${fileName}.schema.js';
 import { Create${name}Schema, Update${name}Schema, ${name}ListQuerySchema } from '../validators/${fileName}.validator.js';
-import { NotFoundError } from '@kodeai/runtime';
+import { NotFoundError } from '@synap-js/runtime';
 
 export const ${lowerName}Controller = {
 ${methods.join(',\n')}

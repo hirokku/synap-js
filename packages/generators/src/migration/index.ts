@@ -1,5 +1,5 @@
-import type { Generator, GeneratorContext, GeneratorResult, GeneratedFile } from '@kodeai/core';
-import type { SpecModel } from '@kodeai/core';
+import type { Generator, GeneratorContext, GeneratorResult, GeneratedFile } from '@synap-js/core';
+import type { SpecModel } from '@synap-js/core';
 import { generatedHeader } from '../utils/naming.js';
 
 export const MigrationGenerator: Generator = {
@@ -13,9 +13,9 @@ export const MigrationGenerator: Generator = {
 };
 
 function generateDbFile(context: GeneratorContext): GeneratedFile {
-  const content = `${generatedHeader('kodeai.config.ts')}import { drizzle } from 'drizzle-orm/node-postgres';
+  const content = `${generatedHeader('synap.config.ts')}import { drizzle } from 'drizzle-orm/node-postgres';
 
-const connectionString = process.env.DATABASE_URL ?? 'postgresql://localhost:5432/kodeai';
+const connectionString = process.env.DATABASE_URL ?? 'postgresql://localhost:5432/synap';
 
 export const db = drizzle(connectionString);
 `;

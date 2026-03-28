@@ -1,5 +1,5 @@
 /**
- * Standardized error hierarchy for Kodeai applications.
+ * Standardized error hierarchy for Synap applications.
  */
 
 export class AppError extends Error {

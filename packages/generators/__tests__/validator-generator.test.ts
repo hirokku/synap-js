@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { ValidatorGenerator } from '../src/validator/index.js';
-import type { SpecModel, GeneratorContext } from '@kodeai/core';
+import type { SpecModel, GeneratorContext } from '@synap-js/core';
 
 const ctx: GeneratorContext = {
   specsDir: 'specs',

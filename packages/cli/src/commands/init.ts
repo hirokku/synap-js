@@ -5,11 +5,11 @@ import { join } from 'node:path';
 export function registerInitCommand(program: Command): void {
   program
     .command('init [name]')
-    .description('Initialize a new Kodeai project')
+    .description('Initialize a new Synap project')
     .option('--db <type>', 'Database provider', 'sqlite')
     .option('--no-frontend', 'API only, no frontend')
     .action(async (name?: string, opts?: { db?: string }) => {
-      const projectName = name ?? 'my-kodeai-app';
+      const projectName = name ?? 'my-synap-app';
       const projectDir = join(process.cwd(), projectName);
       const dbProvider = opts?.db ?? 'sqlite';
 
@@ -18,7 +18,7 @@ export function registerInitCommand(program: Command): void {
         process.exit(1);
       }
 
-      console.log(`\n\x1b[36mKodeai\x1b[0m Creating project "${projectName}"...\n`);
+      console.log(`\n\x1b[36mSynap\x1b[0m Creating project "${projectName}"...\n`);
 
       // Create directory structure
       const dirs = [
@@ -39,14 +39,14 @@ export function registerInitCommand(program: Command): void {
         private: true,
         type: 'module',
         scripts: {
-          dev: 'kodeai dev',
-          generate: 'kodeai generate',
-          validate: 'kodeai validate',
-          build: 'kodeai build',
+          dev: 'synap dev',
+          generate: 'synap generate',
+          validate: 'synap validate',
+          build: 'synap build',
         },
         dependencies: {
-          '@kodeai/cli': '^0.0.1',
-          '@kodeai/runtime': '^0.0.1',
+          '@synap-js/cli': '^0.0.1',
+          '@synap-js/runtime': '^0.0.1',
           hono: '^4.7.0',
           'drizzle-orm': '^0.38.0',
           zod: '^3.24.0',
@@ -140,8 +140,8 @@ api:
     maxLimit: 100
 `);
 
-      // kodeai.config.ts
-      writeFileSync(join(projectDir, 'kodeai.config.ts'), `import { defineConfig } from '@kodeai/core';
+      // synap.config.ts
+      writeFileSync(join(projectDir, 'synap.config.ts'), `import { defineConfig } from '@synap-js/core';
 
 export default defineConfig({
   database: {
@@ -160,19 +160,19 @@ export default defineConfig({
 `);
 
       // CLAUDE.md
-      writeFileSync(join(projectDir, 'CLAUDE.md'), `# Kodeai Project: ${projectName}
+      writeFileSync(join(projectDir, 'CLAUDE.md'), `# Synap Project: ${projectName}
 
-This project uses the Kodeai.js framework — an AI-first full-stack TypeScript framework.
+This project uses the Synap.js framework — an AI-first full-stack TypeScript framework.
 AI operates the framework via CLI commands, not by writing code directly.
 
 ## Quick Reference
-- Generate code: \`kodeai generate\`
-- Validate specs: \`kodeai validate\`
-- Dev server: \`kodeai dev\`
-- Add model: \`kodeai add model <Name>\`
+- Generate code: \`synap generate\`
+- Validate specs: \`synap validate\`
+- Dev server: \`synap dev\`
+- Add model: \`synap add model <Name>\`
 
 ## Architecture
-- Specs (YAML) in specs/ → \`kodeai generate\` → Generated code in src/generated/
+- Specs (YAML) in specs/ → \`synap generate\` → Generated code in src/generated/
 - NEVER edit files in src/generated/ — they are overwritten on generate
 - Custom logic goes in src/extensions/
 
@@ -182,7 +182,7 @@ TypeScript (strict), Hono, Drizzle ORM, Zod, SQLite
 
       console.log(`  \x1b[32m✓\x1b[0m package.json`);
       console.log(`  \x1b[32m✓\x1b[0m tsconfig.json`);
-      console.log(`  \x1b[32m✓\x1b[0m kodeai.config.ts`);
+      console.log(`  \x1b[32m✓\x1b[0m synap.config.ts`);
       console.log(`  \x1b[32m✓\x1b[0m .gitignore`);
       console.log(`  \x1b[32m✓\x1b[0m .env`);
       console.log(`  \x1b[32m✓\x1b[0m CLAUDE.md`);
@@ -191,8 +191,8 @@ TypeScript (strict), Hono, Drizzle ORM, Zod, SQLite
       // Now run generate
       console.log(`\nGenerating code from specs...\n`);
 
-      const { parseAllSpecs, resolveSpecs } = await import('@kodeai/core');
-      const { ModelGenerator, ValidatorGenerator, ApiGenerator, MigrationGenerator } = await import('@kodeai/generators');
+      const { parseAllSpecs, resolveSpecs } = await import('@synap-js/core');
+      const { ModelGenerator, ValidatorGenerator, ApiGenerator, MigrationGenerator } = await import('@synap-js/generators');
 
       const specsDir = join(projectDir, 'specs');
       const outputDir = join(projectDir, 'src', 'generated');
@@ -230,6 +230,6 @@ TypeScript (strict), Hono, Drizzle ORM, Zod, SQLite
       console.log(`Next steps:\n`);
       console.log(`  cd ${projectName}`);
       console.log(`  npm install`);
-      console.log(`  kodeai dev\n`);
+      console.log(`  synap dev\n`);
     });
 }

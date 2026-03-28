@@ -1,12 +1,12 @@
 {
-  "name": "@kodeai/mcp",
+  "name": "@synap-js/mcp",
   "version": "0.0.1",
   "type": "module",
-  "description": "MCP server for the Kodeai framework",
+  "description": "MCP server for the Synap framework",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "bin": {
-    "kodeai-mcp": "./dist/index.js"
+    "synap-mcp": "./dist/index.js"
   },
   "exports": {
     ".": {
@@ -20,8 +20,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@kodeai/core": "workspace:*",
-    "@kodeai/generators": "workspace:*",
+    "@synap-js/core": "workspace:*",
+    "@synap-js/generators": "workspace:*",
     "@modelcontextprotocol/sdk": "^1.12.0",
     "zod": "^3.24.0"
   },

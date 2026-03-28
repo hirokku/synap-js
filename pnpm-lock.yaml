@@ -35,18 +35,18 @@ importers:
       '@hono/node-server':
         specifier: ^1.19.11
         version: 1.19.11(hono@4.12.9)
-      '@kodeai/core':
-        specifier: workspace:*
-        version: link:../core
-      '@kodeai/generators':
-        specifier: workspace:*
-        version: link:../generators
-      '@kodeai/runtime':
-        specifier: workspace:*
-        version: link:../runtime
       '@libsql/client':
         specifier: ^0.17.2
         version: 0.17.2
+      '@synap-js/core':
+        specifier: workspace:*
+        version: link:../core
+      '@synap-js/generators':
+        specifier: workspace:*
+        version: link:../generators
+      '@synap-js/runtime':
+        specifier: workspace:*
+        version: link:../runtime
       commander:
         specifier: ^13.1.0
         version: 13.1.0
@@ -88,7 +88,7 @@ importers:
 
   packages/devtools:
     dependencies:
-      '@kodeai/runtime':
+      '@synap-js/runtime':
         specifier: workspace:*
         version: link:../runtime
     devDependencies:
@@ -101,7 +101,7 @@ importers:
 
   packages/generators:
     dependencies:
-      '@kodeai/core':
+      '@synap-js/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -114,15 +114,15 @@ importers:
 
   packages/mcp:
     dependencies:
-      '@kodeai/core':
-        specifier: workspace:*
-        version: link:../core
-      '@kodeai/generators':
-        specifier: workspace:*
-        version: link:../generators
       '@modelcontextprotocol/sdk':
         specifier: ^1.12.0
         version: 1.28.0(zod@3.25.76)
+      '@synap-js/core':
+        specifier: workspace:*
+        version: link:../core
+      '@synap-js/generators':
+        specifier: workspace:*
+        version: link:../generators
       zod:
         specifier: ^3.24.0
         version: 3.25.76
@@ -139,7 +139,7 @@ importers:
 
   packages/runtime:
     dependencies:
-      '@kodeai/core':
+      '@synap-js/core':
         specifier: workspace:*
         version: link:../core
       drizzle-orm:

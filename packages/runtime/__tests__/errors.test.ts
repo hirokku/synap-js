@@ -9,7 +9,7 @@ import {
   RateLimitError,
 } from '../src/index.js';
 
-describe('@kodeai/runtime errors', () => {
+describe('@synap-js/runtime errors', () => {
   it('NotFoundError has correct status and code', () => {
     const err = new NotFoundError('Product', '123');
     expect(err.status).toBe(404);

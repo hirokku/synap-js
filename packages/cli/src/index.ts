@@ -7,7 +7,7 @@ import { registerDevCommand } from './commands/dev.js';
 export const program = new Command();
 
 program
-  .name('kodeai')
+  .name('synap')
   .description('AI-first full-stack TypeScript framework')
   .version('0.0.1');
 

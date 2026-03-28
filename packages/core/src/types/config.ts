@@ -1,5 +1,5 @@
 /**
- * Kodeai configuration types (kodeai.config.ts)
+ * Synap configuration types (synap.config.ts)
  */
 
 export interface DatabaseConfig {
@@ -85,7 +85,7 @@ export interface EmailConfig {
   from?: string;
 }
 
-export interface KodeaiConfig {
+export interface SynapConfig {
   database: DatabaseConfig;
   generate?: GenerateConfig;
   api?: ApiConfig;
@@ -98,6 +98,6 @@ export interface KodeaiConfig {
   email?: EmailConfig;
 }
 
-export function defineConfig(config: KodeaiConfig): KodeaiConfig {
+export function defineConfig(config: SynapConfig): SynapConfig {
   return config;
 }

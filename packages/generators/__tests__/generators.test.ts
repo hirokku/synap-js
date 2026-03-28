@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { ModelGenerator, ApiGenerator, ValidatorGenerator } from '../src/index.js';
-import type { SpecModel } from '@kodeai/core';
+import type { SpecModel } from '@synap-js/core';
 
-describe('@kodeai/generators', () => {
+describe('@synap-js/generators', () => {
   const emptyContext = {
     specsDir: 'specs',
     outputDir: 'src/generated',

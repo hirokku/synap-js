@@ -1,5 +1,5 @@
 /**
- * Generator interfaces for the Kodeai framework.
+ * Generator interfaces for the Synap framework.
  */
 
 import type { SpecModel } from './spec.js';

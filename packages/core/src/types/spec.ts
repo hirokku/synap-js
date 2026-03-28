@@ -1,5 +1,5 @@
 /**
- * Core spec types for the Kodeai framework.
+ * Core spec types for the Synap framework.
  * These types represent the parsed YAML spec structure.
  */
 
