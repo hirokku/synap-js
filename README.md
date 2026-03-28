@@ -130,7 +130,19 @@ Synap includes a built-in MCP (Model Context Protocol) server that lets any AI â
 
 ### Setup
 
-Add to your MCP client config (e.g. `.claude/mcp.json`):
+Run the setup command for your AI tool:
+
+```bash
+npx synap mcp setup claude      # Claude Code
+npx synap mcp setup cursor      # Cursor
+npx synap mcp setup vscode      # VS Code / GitHub Copilot
+npx synap mcp setup windsurf    # Windsurf
+npx synap mcp setup all         # All of the above
+```
+
+This generates the MCP config file for the selected AI. Only the file you choose is created â€” no project clutter.
+
+Or configure manually by adding to your MCP client config:
 
 ```json
 {
@@ -251,6 +263,7 @@ npx @synap-js/cli init [name]   # Create new project with example spec
 npx synap generate [target]     # Generate code from specs (models, api, or all)
 npx synap validate [spec]       # Validate specs without generating
 npx synap dev                   # Start dev server with SQLite + auto-migrate
+npx synap mcp setup <target>    # Generate MCP config (claude, cursor, vscode, windsurf, all)
 ```
 
 ### Validation Output
