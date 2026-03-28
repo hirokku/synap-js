@@ -4,7 +4,7 @@ import { registerAllResources } from './resources/index.js';
 import { registerAllTools } from './tools/index.js';
 import type { McpServerOptions } from './types.js';
 
-export const MCP_VERSION = '0.1.0';
+export const MCP_VERSION = '0.0.2';
 
 export async function createMcpServer(options: McpServerOptions = { mode: 'local' }): Promise<McpServer> {
   const projectRoot = options.projectRoot ?? resolveProjectRoot();
