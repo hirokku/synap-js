@@ -155,7 +155,7 @@ export async function startRepl(cwd: string): Promise<void> {
         }
 
         console.log('  \x1b[90mThinking...\x1b[0m');
-        const response = await askAi(model, tools, prompt);
+        const response = await askAi(model, tools, prompt, cwd);
         console.log(`\n  \x1b[33m🤖\x1b[0m ${response.replace(/\n/g, '\n  ')}`);
         rl.prompt();
         return;
@@ -164,7 +164,7 @@ export async function startRepl(cwd: string): Promise<void> {
       // Default: treat as AI prompt if model is available
       if (model) {
         console.log('  \x1b[90mThinking...\x1b[0m');
-        const response = await askAi(model, tools, input);
+        const response = await askAi(model, tools, input, cwd);
         console.log(`\n  \x1b[33m🤖\x1b[0m ${response.replace(/\n/g, '\n  ')}`);
       } else {
         console.log(`  Unknown command: "${input}". Type \x1b[36mhelp\x1b[0m for available commands.`);
